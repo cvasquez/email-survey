@@ -23,50 +23,50 @@ function SurveyResponseForm() {
   const [respondentName, setRespondentName] = useState('')
 
   useEffect(() => {
-    fetchSurveyAndRecordClick()
-  }, [surveyId])
+    const fetchSurveyAndRecordClick = async () => {
+      try {
+        // Fetch survey details
+        const response = await fetch(`/api/surveys/${surveyId}`)
+        const data = await response.json()
 
-  const fetchSurveyAndRecordClick = async () => {
-    try {
-      // Fetch survey details
-      const response = await fetch(`/api/surveys/${surveyId}`)
-      const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || 'Survey not found')
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Survey not found')
-      }
+        setSurvey(data.survey)
 
-      setSurvey(data.survey)
+        // Record initial response (click tracking)
+        if (answerValue) {
+          const initialResponse = await fetch('/api/responses', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              survey_id: data.survey.id,
+              answer_value: answerValue,
+              hash_md5: hashMd5 || undefined,
+            }),
+          })
 
-      // Record initial response (click tracking)
-      if (answerValue) {
-        const initialResponse = await fetch('/api/responses', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            survey_id: data.survey.id,
-            answer_value: answerValue,
-            hash_md5: hashMd5 || undefined,
-          }),
-        })
-
-        const responseData = await initialResponse.json()
-        if (initialResponse.ok) {
-          setResponseId(responseData.response.id)
-          // If returning visitor already submitted details, show success state
-          if (responseData.response.free_response || responseData.response.respondent_name) {
-            setSuccess(true)
+          const responseData = await initialResponse.json()
+          if (initialResponse.ok) {
+            setResponseId(responseData.response.id)
+            // If returning visitor already submitted details, show success state
+            if (responseData.response.free_response || responseData.response.respondent_name) {
+              setSuccess(true)
+            }
           }
         }
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchSurveyAndRecordClick()
+  }, [surveyId, answerValue, hashMd5])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

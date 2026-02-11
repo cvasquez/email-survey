@@ -20,46 +20,46 @@ export default function ResponsesPage() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    fetchData()
-  }, [surveyId])
+    const fetchData = async () => {
+      try {
+        // Fetch survey details
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          router.push('/login')
+          return
+        }
 
-  const fetchData = async () => {
-    try {
-      // Fetch survey details
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
+        const { data: surveyData, error: surveyError } = await supabase
+          .from('surveys')
+          .select('*')
+          .eq('id', surveyId)
+          .eq('user_id', user.id)
+          .single()
+
+        if (surveyError || !surveyData) {
+          throw new Error('Survey not found')
+        }
+
+        setSurvey(surveyData)
+
+        // Fetch responses
+        const responseData = await fetch(`/api/surveys/${surveyId}/responses`)
+        const responseJson = await responseData.json()
+
+        if (!responseData.ok) {
+          throw new Error(responseJson.error || 'Failed to fetch responses')
+        }
+
+        setResponses(responseJson.responses)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
-
-      const { data: surveyData, error: surveyError } = await supabase
-        .from('surveys')
-        .select('*')
-        .eq('id', surveyId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (surveyError || !surveyData) {
-        throw new Error('Survey not found')
-      }
-
-      setSurvey(surveyData)
-
-      // Fetch responses
-      const responseData = await fetch(`/api/surveys/${surveyId}/responses`)
-      const responseJson = await responseData.json()
-
-      if (!responseData.ok) {
-        throw new Error(responseJson.error || 'Failed to fetch responses')
-      }
-
-      setResponses(responseJson.responses)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchData()
+  }, [surveyId, supabase, router])
 
   const copyLink = () => {
     if (!survey) return

@@ -71,27 +71,27 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Your survey link format:
 ```
-https://yourdomain.com/s/[survey-id]?answer=YOUR-ANSWER-VALUE
+https://yourdomain.com/s/[survey-id]?hash_md5={{subscriber.email | hash_md5}}&answer=YOUR-ANSWER-VALUE
 ```
 
 **Example email:**
 
 "How satisfied are you with our product?"
 
-- [Very Satisfied](https://yourdomain.com/s/abc123?answer=very-satisfied)
-- [Satisfied](https://yourdomain.com/s/abc123?answer=satisfied)
-- [Neutral](https://yourdomain.com/s/abc123?answer=neutral)
-- [Dissatisfied](https://yourdomain.com/s/abc123?answer=dissatisfied)
+- [Very Satisfied](https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=very-satisfied)
+- [Satisfied](https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=satisfied)
+- [Neutral](https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=neutral)
+- [Dissatisfied](https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=dissatisfied)
 
 ### AWeber Integration
 
 Add the `hash_md5` personalization variable to track which subscriber gave which response:
 
 ```
-https://yourdomain.com/s/abc123?answer=satisfied&hash_md5={!md5_hash}
+https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=satisfied
 ```
 
-AWeber will automatically replace `{!md5_hash}` with each subscriber's unique hash. You'll see this in the responses table.
+AWeber uses the template syntax `{{subscriber.email | hash_md5}}` which generates an MD5 hash of the subscriber's email address. This gets replaced with the actual hash value when the email is sent, allowing you to tie responses back to specific subscribers.
 
 ### Response Flow
 
@@ -159,7 +159,7 @@ AWeber will automatically replace `{!md5_hash}` with each subscriber's unique ha
 - [ ] View responses in dashboard
 - [ ] Create another survey with "Require name" enabled
 - [ ] Test that name field appears and is required
-- [ ] Test AWeber integration with `?answer=satisfied&hash_md5=test123`
+- [ ] Test AWeber integration with `?hash_md5=test123&answer=satisfied`
 - [ ] Verify hash_md5 appears in responses table
 - [ ] Test CSV export functionality
 - [ ] Test response filtering
@@ -169,18 +169,18 @@ AWeber will automatically replace `{!md5_hash}` with each subscriber's unique ha
 In your AWeber message editor, create links like this:
 
 ```html
-<a href="https://yourdomain.com/s/abc123?answer=very-satisfied&hash_md5={!md5_hash}">
+<a href="https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=very-satisfied">
   Very Satisfied
 </a>
-<a href="https://yourdomain.com/s/abc123?answer=satisfied&hash_md5={!md5_hash}">
+<a href="https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=satisfied">
   Satisfied
 </a>
-<a href="https://yourdomain.com/s/abc123?answer=dissatisfied&hash_md5={!md5_hash}">
+<a href="https://yourdomain.com/s/abc123?hash_md5={{subscriber.email | hash_md5}}&answer=dissatisfied">
   Dissatisfied
 </a>
 ```
 
-AWeber will replace `{!md5_hash}` with each subscriber's unique identifier, allowing you to tie responses to specific subscribers.
+The `{{subscriber.email | hash_md5}}` template variable is replaced by AWeber with an MD5 hash of each subscriber's email address when the email is sent. This lets you tie responses back to specific subscribers for follow-up campaigns.
 
 ## Database Schema
 
