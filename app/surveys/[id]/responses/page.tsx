@@ -213,9 +213,12 @@ export default function ResponsesPage() {
     URL.revokeObjectURL(url)
   }
 
-  const copyResponse = (responseId: string, text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedResponseId(responseId)
+  const copyResponse = (response: Response) => {
+    const parts = [`"${response.free_response || ''}"`]
+    const attribution = [response.respondent_name, response.location].filter(Boolean).join(' from ')
+    if (attribution) parts.push(`- ${attribution}`)
+    navigator.clipboard.writeText(parts.join('\n'))
+    setCopiedResponseId(response.id)
     setTimeout(() => setCopiedResponseId(null), 2000)
   }
 
@@ -226,8 +229,7 @@ export default function ResponsesPage() {
     lines.push(survey?.title || 'Survey Results')
     lines.push(`${responses.length} total responses, ${totalComments} with comments`)
     lines.push('')
-
-    lines.push('RESULTS')
+    lines.push('The Results:')
     for (const [value, { total, withComments }] of answerCounts) {
       const pct = responses.length > 0 ? Math.round((total / responses.length) * 100) : 0
       const commentPct = total > 0 ? Math.round((withComments / total) * 100) : 0
@@ -426,7 +428,7 @@ export default function ResponsesPage() {
                     <div className="group/resp relative mb-2">
                       <p className="text-sm text-gray-900">{response.free_response}</p>
                       <button
-                        onClick={() => copyResponse(response.id, response.free_response!)}
+                        onClick={() => copyResponse(response)}
                         className="mt-1 text-xs text-gray-400 hover:text-gray-600"
                       >
                         {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
@@ -496,7 +498,7 @@ export default function ResponsesPage() {
                             <div className="group/resp relative">
                               <span>{response.free_response}</span>
                               <button
-                                onClick={() => copyResponse(response.id, response.free_response!)}
+                                onClick={() => copyResponse(response)}
                                 className="ml-2 text-xs text-gray-400 hover:text-gray-600 opacity-0 group-hover/resp:opacity-100 transition-opacity"
                               >
                                 {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
