@@ -33,6 +33,8 @@ export default function ResponsesPage() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
   const [copied, setCopied] = useState(false)
+  const [copiedStats, setCopiedStats] = useState(false)
+  const [copiedResponseId, setCopiedResponseId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deletingSurvey, setDeletingSurvey] = useState(false)
   const [commentsOnly, setCommentsOnly] = useState(false)
@@ -211,6 +213,32 @@ export default function ResponsesPage() {
     URL.revokeObjectURL(url)
   }
 
+  const copyResponse = (responseId: string, text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedResponseId(responseId)
+    setTimeout(() => setCopiedResponseId(null), 2000)
+  }
+
+  const copyStats = () => {
+    if (responses.length === 0) return
+
+    const lines: string[] = []
+    lines.push(survey?.title || 'Survey Results')
+    lines.push(`${responses.length} total responses, ${totalComments} with comments`)
+    lines.push('')
+
+    lines.push('RESULTS')
+    for (const [value, { total, withComments }] of answerCounts) {
+      const pct = responses.length > 0 ? Math.round((total / responses.length) * 100) : 0
+      const commentPct = total > 0 ? Math.round((withComments / total) * 100) : 0
+      lines.push(`${value}: ${total} (${pct}%) — ${commentPct}% left a comment`)
+    }
+
+    navigator.clipboard.writeText(lines.join('\n'))
+    setCopiedStats(true)
+    setTimeout(() => setCopiedStats(false), 2000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -266,6 +294,13 @@ export default function ResponsesPage() {
               className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition"
             >
               {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+            <button
+              onClick={copyStats}
+              disabled={responses.length === 0}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition disabled:opacity-50"
+            >
+              {copiedStats ? 'Copied!' : 'Copy Stats'}
             </button>
             <button
               onClick={deleteSurvey}
@@ -388,7 +423,15 @@ export default function ResponsesPage() {
                     </button>
                   </div>
                   {response.free_response && (
-                    <p className="text-sm text-gray-900 mb-2">{response.free_response}</p>
+                    <div className="group/resp relative mb-2">
+                      <p className="text-sm text-gray-900">{response.free_response}</p>
+                      <button
+                        onClick={() => copyResponse(response.id, response.free_response!)}
+                        className="mt-1 text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
                   )}
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                     <span>{formatDate(response.created_at)}</span>
@@ -449,7 +492,17 @@ export default function ResponsesPage() {
                           {response.answer_value}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900">
-                          {response.free_response || '-'}
+                          {response.free_response ? (
+                            <div className="group/resp relative">
+                              <span>{response.free_response}</span>
+                              <button
+                                onClick={() => copyResponse(response.id, response.free_response!)}
+                                className="ml-2 text-xs text-gray-400 hover:text-gray-600 opacity-0 group-hover/resp:opacity-100 transition-opacity"
+                              >
+                                {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
+                              </button>
+                            </div>
+                          ) : '-'}
                         </td>
                         {survey?.require_name && (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
