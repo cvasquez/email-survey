@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { CreateResponseInput } from '@/types/database'
+import { ensureOrg } from '@/lib/org'
 
 export async function POST(request: Request) {
   try {
@@ -194,6 +195,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    await ensureOrg()
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const responseId = searchParams.get('id')
@@ -202,15 +204,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Response ID is required' }, { status: 400 })
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Use admin client for the delete since RLS would block it
     const admin = createAdminClient()
 
-    // Verify the response belongs to a survey owned by this user
+    // Verify the response belongs to a survey in the user's org (RLS on surveys table)
     const { data: response } = await admin
       .from('responses')
       .select('survey_id')
@@ -221,11 +218,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Response not found' }, { status: 404 })
     }
 
+    // RLS ensures user can only see surveys from their orgs
     const { data: survey } = await supabase
       .from('surveys')
       .select('id')
       .eq('id', response.survey_id)
-      .eq('user_id', user.id)
       .single()
 
     if (!survey) {
@@ -243,6 +240,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

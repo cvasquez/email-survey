@@ -2,23 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
 import type { CreateSurveyInput } from '@/types/database'
+import { ensureOrg } from '@/lib/org'
 
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
 
 export async function GET() {
   try {
+    const { orgId } = await ensureOrg()
     const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const { data: surveys, error } = await supabase
       .from('surveys')
       .select('*, responses(count)')
-      .eq('user_id', user.id)
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -34,19 +30,17 @@ export async function GET() {
 
     return NextResponse.json({ surveys: surveysWithCounts })
   } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const { orgId, user } = await ensureOrg()
     const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const body: CreateSurveyInput = await request.json()
 
@@ -66,6 +60,7 @@ export async function POST(request: Request) {
         unique_link_id: uniqueLinkId,
         user_id: user.id,
         created_by_email: user.email,
+        organization_id: orgId,
       })
       .select()
       .single()
@@ -76,6 +71,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ survey }, { status: 201 })
   } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
