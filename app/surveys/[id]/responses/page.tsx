@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatDate } from '@/lib/utils'
 import type { Response, Survey } from '@/types/database'
+import { Nav } from '@/app/components/nav'
 
 function parseUserAgent(ua: string | null): string {
   if (!ua) return '-'
@@ -48,11 +49,11 @@ export default function ResponsesPage() {
           return
         }
 
+        // RLS ensures user can only access surveys from their orgs
         const { data: surveyData, error: surveyError } = await supabase
           .from('surveys')
           .select('*')
           .eq('id', surveyId)
-          .eq('user_id', user.id)
           .single()
 
         if (surveyError || !surveyData) {
@@ -86,11 +87,6 @@ export default function ResponsesPage() {
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
   }
 
   const deleteResponse = async (responseId: string) => {
@@ -236,7 +232,7 @@ export default function ResponsesPage() {
       const pct = responses.length > 0 ? Math.round((total / responses.length) * 100) : 0
       const commentPct = total > 0 ? Math.round((withComments / total) * 100) : 0
       const pctOfAllComments = totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0
-      lines.push(`${value}: ${total} (${pct}%) — ${commentPct}% commented, ${pctOfAllComments}% of all comments`)
+      lines.push(`${value}: ${total} (${pct}%). ${commentPct}% commented for ${pctOfAllComments}% of all comments`)
     }
 
     navigator.clipboard.writeText(lines.join('\n'))
@@ -273,21 +269,7 @@ export default function ResponsesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-semibold">Email Survey Tool</h1>
-            <div className="space-x-4">
-              <a href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                Dashboard
-              </a>
-              <button onClick={handleLogout} className="text-gray-700 hover:text-gray-900">
-                Log Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Nav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -456,47 +438,56 @@ export default function ResponsesPage() {
             {/* Desktop table layout */}
             <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                  <colgroup>
+                    <col className="w-[100px]" />
+                    <col className="w-[100px]" />
+                    <col />
+                    {survey?.require_name && <col className="w-[100px]" />}
+                    <col className="w-[120px]" />
+                    <col className="w-[80px]" />
+                    <col className="w-[100px]" />
+                    <col className="w-[70px]" />
+                  </colgroup>
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Timestamp
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Answer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Free Response
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Response
                       </th>
                       {survey?.require_name && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                           Name
                         </th>
                       )}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Device
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Hash MD5
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Hash
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Actions
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredResponses.map((response) => (
                       <tr key={response.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <td className="px-3 py-3 text-xs text-gray-500">
                           {formatDate(response.created_at)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-3 py-3 text-sm font-medium text-gray-900 truncate">
                           {response.answer_value}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                        <td className="px-3 py-3 text-sm text-gray-900">
                           {response.free_response ? (
                             <div className="group/resp relative">
                               <span>{response.free_response}</span>
@@ -510,30 +501,26 @@ export default function ResponsesPage() {
                           ) : '-'}
                         </td>
                         {survey?.require_name && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-3 py-3 text-sm text-gray-700 truncate">
                             {response.respondent_name || '-'}
                           </td>
                         )}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <td className="px-3 py-3 text-xs text-gray-500 truncate">
                           {response.location || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <td className="px-3 py-3 text-xs text-gray-500 truncate">
                           {parseUserAgent(response.user_agent)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
-                          {response.hash_md5 ? (
-                            <span className="text-xs">{response.hash_md5.substring(0, 12)}...</span>
-                          ) : (
-                            '-'
-                          )}
+                        <td className="px-3 py-3 text-xs text-gray-500 font-mono truncate">
+                          {response.hash_md5 ? response.hash_md5.substring(0, 8) : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <td className="px-3 py-3 text-right text-sm">
                           <button
                             onClick={() => deleteResponse(response.id)}
                             disabled={deletingId === response.id}
                             className="text-red-600 hover:text-red-900 disabled:opacity-50"
                           >
-                            {deletingId === response.id ? 'Deleting...' : 'Delete'}
+                            {deletingId === response.id ? '...' : '❌'}
                           </button>
                         </td>
                       </tr>

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { formatDate } from '@/lib/utils'
 import type { Survey } from '@/types/database'
+import { Nav } from '@/app/components/nav'
 
 export default function DashboardPage() {
   const [surveys, setSurveys] = useState<(Survey & { response_count: number })[]>([])
@@ -13,7 +13,6 @@ export default function DashboardPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -35,12 +34,6 @@ export default function DashboardPage() {
 
     fetchSurveys()
   }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
 
   const copyLink = (surveyId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
@@ -72,23 +65,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-semibold">Email Survey Tool</h1>
-            <button
-              onClick={handleLogout}
-              className="text-gray-700 hover:text-gray-900"
-            >
-              Log Out
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Nav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Your Surveys</h2>
+          <h2 className="text-2xl font-bold">Surveys</h2>
           <a
             href="/surveys/new"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"

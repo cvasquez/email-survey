@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { ensureOrg } from '@/lib/org'
 
 export async function GET(
   request: Request,
@@ -33,19 +34,14 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    await ensureOrg()
     const supabase = await createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Verify ownership before deleting
+    // RLS ensures user can only delete surveys from their orgs
     const { data: survey, error: surveyError } = await supabase
       .from('surveys')
       .select('id')
       .eq('id', id)
-      .eq('user_id', user.id)
       .single()
 
     if (surveyError || !survey) {
@@ -64,6 +60,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Nav } from '@/app/components/nav'
 
 export default function NewSurveyPage() {
   const [title, setTitle] = useState('')
@@ -44,19 +45,7 @@ export default function NewSurveyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-semibold">Email Survey Tool</h1>
-            <a
-              href="/dashboard"
-              className="text-gray-700 hover:text-gray-900"
-            >
-              Back to Dashboard
-            </a>
-          </div>
-        </div>
-      </nav>
+      <Nav />
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-lg shadow-md p-8">
