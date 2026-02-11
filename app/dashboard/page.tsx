@@ -122,7 +122,56 @@ export default function DashboardPage() {
         )}
 
         {!loading && !error && surveys.length > 0 && (
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="space-y-4 md:hidden">
+            {surveys.map((survey) => (
+              <div key={survey.id} className="bg-white rounded-lg shadow-sm p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <a href={`/surveys/${survey.id}/responses`} className="font-medium text-gray-900 hover:text-blue-600">{survey.title}</a>
+                    <div className="text-xs text-gray-500 mt-0.5">{survey.unique_link_id}</div>
+                  </div>
+                  {survey.is_active ? (
+                    <span className="px-2 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                      Active
+                    </span>
+                  ) : (
+                    <span className="px-2 text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                      Inactive
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-sm text-gray-700 mb-3">
+                  <span>{survey.response_count} responses</span>
+                  <span>{formatDate(survey.created_at)}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm font-medium">
+                  <button
+                    onClick={() => copyLink(survey.unique_link_id)}
+                    className="text-blue-600"
+                  >
+                    {copiedId === survey.unique_link_id ? 'Copied!' : 'Copy Link'}
+                  </button>
+                  <a
+                    href={`/surveys/${survey.id}/responses`}
+                    className="text-indigo-600"
+                  >
+                    View
+                  </a>
+                  <button
+                    onClick={() => deleteSurvey(survey.id, survey.title)}
+                    disabled={deletingId === survey.id}
+                    className="text-red-600 disabled:opacity-50"
+                  >
+                    {deletingId === survey.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && surveys.length > 0 && (
+          <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -147,7 +196,7 @@ export default function DashboardPage() {
                 {surveys.map((survey) => (
                   <tr key={survey.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{survey.title}</div>
+                      <a href={`/surveys/${survey.id}/responses`} className="text-sm font-medium text-gray-900 hover:text-blue-600">{survey.title}</a>
                       <div className="text-xs text-gray-700 mt-1">
                         Link ID: {survey.unique_link_id}
                       </div>

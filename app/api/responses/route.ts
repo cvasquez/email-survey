@@ -43,13 +43,14 @@ export async function POST(request: Request) {
     let location: string | null = null
     try {
       const geoUrl = ip
-        ? `http://ip-api.com/json/${ip}?fields=city,country`
-        : `http://ip-api.com/json/?fields=city,country`
+        ? `http://ip-api.com/json/${ip}?fields=city,regionName,country`
+        : `http://ip-api.com/json/?fields=city,regionName,country`
       const geoRes = await fetch(geoUrl)
       if (geoRes.ok) {
         const geo = await geoRes.json()
         if (geo.city && geo.country) {
-          location = `${geo.city}, ${geo.country}`
+          const parts = [geo.city, geo.regionName, geo.country].filter(Boolean)
+          location = parts.join(', ')
         }
       }
     } catch {

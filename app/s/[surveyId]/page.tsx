@@ -115,7 +115,7 @@ function SurveyResponseForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <p className="text-slate-700">Just one sec...</p>
       </div>
     )
@@ -123,7 +123,7 @@ function SurveyResponseForm() {
 
   if (error && !survey) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
             <h1 className="text-2xl font-bold mb-4 text-red-600">Survey Not Found</h1>
@@ -136,7 +136,7 @@ function SurveyResponseForm() {
 
   if (!survey.is_active) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
             <h1 className="text-2xl font-bold mb-4 text-slate-900">Survey Closed</h1>
@@ -149,7 +149,7 @@ function SurveyResponseForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
             <div className="text-center">
@@ -180,7 +180,7 @@ function SurveyResponseForm() {
   const displayAnswer = formatAnswerValue(answerValue)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4">
+    <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0 sm:py-12 px-4">
       <div className="max-w-2xl w-full">
 
           {error && (
