@@ -85,9 +85,15 @@ export async function POST(request: Request) {
       existingResponse = data
     }
 
-    // If response already exists, return it
+    // If response already exists, return minimal info (no PII)
     if (existingResponse) {
-      return NextResponse.json({ response: existingResponse }, { status: 200 })
+      return NextResponse.json({
+        response: {
+          id: existingResponse.id,
+          answer_value: existingResponse.answer_value,
+          has_details: !!(existingResponse.free_response?.trim() || existingResponse.respondent_name?.trim()),
+        },
+      }, { status: 200 })
     }
 
     // Insert new response (free_response can be null for initial tracking)
@@ -111,7 +117,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ response }, { status: 201 })
+    return NextResponse.json({
+      response: {
+        id: response.id,
+        answer_value: response.answer_value,
+        has_details: false,
+      },
+    }, { status: 201 })
   } catch (error: any) {
     console.error('Unexpected error in POST /api/responses:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -132,6 +144,23 @@ export async function PATCH(request: Request) {
       )
     }
 
+    // Verify the request IP matches the original response's IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip')
+
+    const { data: existing } = await supabase
+      .from('responses')
+      .select('ip_address')
+      .eq('id', body.response_id)
+      .single()
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Response not found' }, { status: 404 })
+    }
+
+    if (existing.ip_address && ip && existing.ip_address !== ip) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     // Update response with additional details
     const updateData: any = {}
     if (body.free_response?.trim()) updateData.free_response = body.free_response.trim()
@@ -148,7 +177,7 @@ export async function PATCH(request: Request) {
       .from('responses')
       .update(updateData)
       .eq('id', body.response_id)
-      .select()
+      .select('id, answer_value')
       .single()
 
     if (error) {

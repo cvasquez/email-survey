@@ -53,7 +53,7 @@ function SurveyResponseForm() {
           if (initialResponse.ok) {
             setResponseId(responseData.response.id)
             // If returning visitor already submitted details, show success state
-            if (responseData.response.free_response || responseData.response.respondent_name) {
+            if (responseData.response.has_details) {
               setSuccess(true)
             }
           }

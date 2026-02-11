@@ -10,10 +10,10 @@ export async function GET(
     const supabase = await createClient()
 
     // Public endpoint - no auth required
-    // Fetch survey by unique_link_id (used in URLs)
+    // Fetch survey by unique_link_id (used in URLs) — only return fields needed by the public form
     const { data: survey, error } = await supabase
       .from('surveys')
-      .select('*')
+      .select('id, title, is_active, require_name')
       .eq('unique_link_id', id)
       .single()
 
