@@ -216,7 +216,9 @@ export default function ResponsesPage() {
   const copyResponse = (response: Response) => {
     const parts = [`"${response.free_response || ''}"`]
     const attribution = [response.respondent_name, response.location].filter(Boolean).join(' from ')
-    if (attribution) parts.push(`- ${attribution}`)
+    const answerTag = response.answer_value ? `(responded ${response.answer_value})` : ''
+    const attrParts = [attribution, answerTag].filter(Boolean).join(' ')
+    if (attrParts) parts.push(`- ${attrParts}`)
     navigator.clipboard.writeText(parts.join('\n'))
     setCopiedResponseId(response.id)
     setTimeout(() => setCopiedResponseId(null), 2000)
@@ -233,7 +235,8 @@ export default function ResponsesPage() {
     for (const [value, { total, withComments }] of answerCounts) {
       const pct = responses.length > 0 ? Math.round((total / responses.length) * 100) : 0
       const commentPct = total > 0 ? Math.round((withComments / total) * 100) : 0
-      lines.push(`${value}: ${total} (${pct}%) — ${commentPct}% left a comment`)
+      const pctOfAllComments = totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0
+      lines.push(`${value}: ${total} (${pct}%) — ${commentPct}% commented, ${pctOfAllComments}% of all comments`)
     }
 
     navigator.clipboard.writeText(lines.join('\n'))
