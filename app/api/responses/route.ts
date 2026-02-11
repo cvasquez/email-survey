@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { CreateResponseInput } from '@/types/database'
 
@@ -35,8 +36,25 @@ export async function POST(request: Request) {
     }
 
     // Get IP address and user agent for tracking
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip')
     const userAgent = request.headers.get('user-agent')
+
+    // Look up location from IP (falls back to server IP if no client IP available)
+    let location: string | null = null
+    try {
+      const geoUrl = ip
+        ? `http://ip-api.com/json/${ip}?fields=city,country`
+        : `http://ip-api.com/json/?fields=city,country`
+      const geoRes = await fetch(geoUrl)
+      if (geoRes.ok) {
+        const geo = await geoRes.json()
+        if (geo.city && geo.country) {
+          location = `${geo.city}, ${geo.country}`
+        }
+      }
+    } catch {
+      // Geolocation is best-effort, don't block response submission
+    }
 
     // HYBRID DEDUPLICATION (Option 3)
     let existingResponse = null
@@ -82,6 +100,7 @@ export async function POST(request: Request) {
         hash_md5: body.hash_md5?.trim() || null,
         ip_address: ip || null,
         user_agent: userAgent || null,
+        location: location,
       })
       .select()
       .single()
@@ -139,6 +158,61 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ response }, { status: 200 })
   } catch (error: any) {
     console.error('Unexpected error in PATCH /api/responses:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+    const responseId = searchParams.get('id')
+
+    if (!responseId) {
+      return NextResponse.json({ error: 'Response ID is required' }, { status: 400 })
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Use admin client for the delete since RLS would block it
+    const admin = createAdminClient()
+
+    // Verify the response belongs to a survey owned by this user
+    const { data: response } = await admin
+      .from('responses')
+      .select('survey_id')
+      .eq('id', responseId)
+      .single()
+
+    if (!response) {
+      return NextResponse.json({ error: 'Response not found' }, { status: 404 })
+    }
+
+    const { data: survey } = await supabase
+      .from('surveys')
+      .select('id')
+      .eq('id', response.survey_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!survey) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
+    const { error } = await admin
+      .from('responses')
+      .delete()
+      .eq('id', responseId)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

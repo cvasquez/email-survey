@@ -20,6 +20,7 @@ export type Response = {
   hash_md5: string | null
   ip_address: string | null
   user_agent: string | null
+  location: string | null
 }
 
 export type CreateSurveyInput = {

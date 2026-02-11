@@ -7,33 +7,34 @@ import { formatDate } from '@/lib/utils'
 import type { Survey } from '@/types/database'
 
 export default function DashboardPage() {
-  const [surveys, setSurveys] = useState<Survey[]>([])
+  const [surveys, setSurveys] = useState<(Survey & { response_count: number })[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
+    const fetchSurveys = async () => {
+      try {
+        const response = await fetch('/api/surveys')
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch surveys')
+        }
+
+        setSurveys(data.surveys)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchSurveys()
   }, [])
-
-  const fetchSurveys = async () => {
-    try {
-      const response = await fetch('/api/surveys')
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch surveys')
-      }
-
-      setSurveys(data.surveys)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -43,10 +44,30 @@ export default function DashboardPage() {
 
   const copyLink = (surveyId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-    const link = `${baseUrl}/s/${surveyId}?hash_md5={{subscriber.email | hash_md5}}&answer=YOUR-ANSWER-HERE`
+    const link = `${baseUrl}/s/${surveyId}?answer=YOUR-ANSWER-HERE`
     navigator.clipboard.writeText(link)
     setCopiedId(surveyId)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const deleteSurvey = async (surveyId: string, title: string) => {
+    if (!confirm(`Delete "${title}" and all its responses? This cannot be undone.`)) {
+      return
+    }
+
+    setDeletingId(surveyId)
+    try {
+      const response = await fetch(`/api/surveys/${surveyId}`, { method: 'DELETE' })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to delete survey')
+      }
+      setSurveys((prev) => prev.filter((s) => s.id !== surveyId))
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -109,15 +130,15 @@ export default function DashboardPage() {
                     Title
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    Responses
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Created
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Require Name
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -130,6 +151,9 @@ export default function DashboardPage() {
                       <div className="text-xs text-gray-700 mt-1">
                         Link ID: {survey.unique_link_id}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      {survey.response_count}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {formatDate(survey.created_at)}
@@ -145,9 +169,6 @@ export default function DashboardPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {survey.require_name ? 'Yes' : 'No'}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       <button
                         onClick={() => copyLink(survey.unique_link_id)}
@@ -159,8 +180,15 @@ export default function DashboardPage() {
                         href={`/surveys/${survey.id}/responses`}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Responses
+                        View
                       </a>
+                      <button
+                        onClick={() => deleteSurvey(survey.id, survey.title)}
+                        disabled={deletingId === survey.id}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                      >
+                        {deletingId === survey.id ? 'Deleting...' : 'Delete'}
+                      </button>
                     </td>
                   </tr>
                 ))}

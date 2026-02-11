@@ -26,3 +26,44 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify ownership before deleting
+    const { data: survey, error: surveyError } = await supabase
+      .from('surveys')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (surveyError || !survey) {
+      return NextResponse.json({ error: 'Survey not found' }, { status: 404 })
+    }
+
+    // Delete survey (responses cascade via FK)
+    const { error } = await supabase
+      .from('surveys')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

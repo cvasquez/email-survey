@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data: surveys, error } = await supabase
       .from('surveys')
-      .select('*')
+      .select('*, responses(count)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -25,7 +25,14 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ surveys })
+    // Flatten the response count
+    const surveysWithCounts = (surveys || []).map((s: any) => ({
+      ...s,
+      response_count: s.responses?.[0]?.count ?? 0,
+      responses: undefined,
+    }))
+
+    return NextResponse.json({ surveys: surveysWithCounts })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
