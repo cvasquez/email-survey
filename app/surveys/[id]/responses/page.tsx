@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatDate } from '@/lib/utils'
 import type { Response, Survey } from '@/types/database'
 import { Nav } from '@/app/components/nav'
+import { AnswerDistributionChart } from '@/app/components/answer-distribution-chart'
+import { ResponseMap } from '@/app/components/response-map'
+import html2canvas from 'html2canvas'
 
 function parseUserAgent(ua: string | null): string {
   if (!ua) return '-'
@@ -27,6 +30,9 @@ export default function ResponsesPage() {
   const router = useRouter()
   const surveyId = params.id as string
   const supabase = createClient()
+
+  const chartRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
 
   const [survey, setSurvey] = useState<Survey | null>(null)
   const [responses, setResponses] = useState<Response[]>([])
@@ -240,6 +246,16 @@ export default function ResponsesPage() {
     setTimeout(() => setCopiedStats(false), 2000)
   }
 
+  const downloadPng = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
+    if (!ref.current) return
+    const canvas = await html2canvas(ref.current, { backgroundColor: '#ffffff', scale: 2 })
+    const url = canvas.toDataURL('image/png')
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -323,6 +339,38 @@ export default function ResponsesPage() {
             </div>
           ))}
         </div>
+
+        {/* Visualizations */}
+        {responses.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div ref={chartRef} className="bg-white rounded-lg shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-gray-600">Answer Distribution</p>
+                <button
+                  onClick={() => downloadPng(chartRef, `${survey?.title || 'chart'}-distribution.png`)}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  Save PNG
+                </button>
+              </div>
+              <AnswerDistributionChart answerCounts={answerCounts} totalResponses={responses.length} />
+            </div>
+            {locationBreakdowns.countries.length > 0 && (
+              <div ref={mapRef} className="bg-white rounded-lg shadow-sm p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-gray-600">Response Locations</p>
+                  <button
+                    onClick={() => downloadPng(mapRef, `${survey?.title || 'map'}-locations.png`)}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    Save PNG
+                  </button>
+                </div>
+                <ResponseMap countries={locationBreakdowns.countries} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Location Breakdowns */}
         {(locationBreakdowns.countries.length > 0 || locationBreakdowns.usRegions.length > 0) && (
