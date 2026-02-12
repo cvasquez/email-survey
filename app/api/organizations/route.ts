@@ -17,11 +17,16 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const organizations = (memberships || []).map((m: any) => ({
-      id: m.organizations.id,
-      name: m.organizations.name,
-      role: m.role,
-    }))
+    // Deduplicate by org ID (in case of duplicate membership rows)
+    const seen = new Set<string>()
+    const organizations: { id: string; name: string; role: string }[] = []
+    for (const m of memberships || []) {
+      const org = (m as any).organizations
+      if (!seen.has(org.id)) {
+        seen.add(org.id)
+        organizations.push({ id: org.id, name: org.name, role: m.role })
+      }
+    }
 
     return NextResponse.json({ organizations, currentOrgId })
   } catch (error: any) {
