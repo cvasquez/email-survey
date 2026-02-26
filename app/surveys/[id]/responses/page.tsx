@@ -180,7 +180,7 @@ export default function ResponsesPage() {
       countries: Object.entries(countries).sort((a, b) => b[1] - a[1]),
       usRegions: Object.entries(usRegions).sort((a, b) => b[1] - a[1]),
     }
-  }, [responses])
+  }, [activeResponses])
 
   const filteredResponses = activeResponses.filter((response) => {
     if (commentsOnly && !response.free_response?.trim()) return false

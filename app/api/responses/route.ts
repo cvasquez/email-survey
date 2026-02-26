@@ -153,25 +153,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // After inserting, check for multiple different answers from same IP within 5 minutes
-    // This catches email security scanners that click all answer links
+    // After inserting, detect scanner patterns from same IP
     if (ip) {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
       const { data: recentFromSameIp } = await supabase
         .from('responses')
-        .select('id, answer_value')
-        .eq('survey_id', body.survey_id)
+        .select('id, answer_value, survey_id, free_response')
         .eq('ip_address', ip)
-        .gte('created_at', fiveMinutesAgo)
+        .gte('created_at', tenMinutesAgo)
 
       if (recentFromSameIp && recentFromSameIp.length > 1) {
-        const uniqueAnswers = new Set(recentFromSameIp.map((r) => r.answer_value))
-        if (uniqueAnswers.size > 1) {
-          // Multiple different answers from same IP = likely a scanner
-          await supabase
-            .from('responses')
-            .update({ is_suspected_bot: true })
-            .in('id', recentFromSameIp.map((r) => r.id))
+        const uniqueSurveys = new Set(recentFromSameIp.map((r) => r.survey_id))
+        const uniqueAnswersThisSurvey = new Set(
+          recentFromSameIp.filter((r) => r.survey_id === body.survey_id).map((r) => r.answer_value)
+        )
+
+        // Flag if: multiple different answers to same survey, OR responses to multiple surveys
+        // Never flag responses that have comments — those are real engagement
+        if (uniqueAnswersThisSurvey.size > 1 || uniqueSurveys.size > 1) {
+          const idsToFlag = recentFromSameIp
+            .filter((r) => !r.free_response?.trim())
+            .map((r) => r.id)
+          if (idsToFlag.length > 0) {
+            await supabase
+              .from('responses')
+              .update({ is_suspected_bot: true })
+              .in('id', idsToFlag)
+          }
         }
       }
     }
@@ -221,8 +229,12 @@ export async function PATCH(request: Request) {
     }
 
     // Update response with additional details
+    // Adding a comment proves real engagement, so clear any bot flag
     const updateData: any = {}
-    if (body.free_response?.trim()) updateData.free_response = body.free_response.trim()
+    if (body.free_response?.trim()) {
+      updateData.free_response = body.free_response.trim()
+      updateData.is_suspected_bot = false
+    }
     if (body.respondent_name?.trim()) updateData.respondent_name = body.respondent_name.trim()
 
     if (Object.keys(updateData).length === 0) {
