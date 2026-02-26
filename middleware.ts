@@ -40,10 +40,12 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/surveys') ||
     request.nextUrl.pathname.startsWith('/settings')
 
-  // Auth routes: login and signup
+  // Auth routes: login, signup, and related unauthenticated flows
   const isAuthRoute =
     request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/signup'
+    request.nextUrl.pathname === '/signup' ||
+    request.nextUrl.pathname === '/forgot-password' ||
+    request.nextUrl.pathname === '/resend-verification'
 
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !user) {
@@ -69,5 +71,8 @@ export const config = {
     '/settings/:path*',
     '/login',
     '/signup',
+    '/forgot-password',
+    '/resend-verification',
+    '/auth/confirm',
   ],
 }

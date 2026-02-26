@@ -62,9 +62,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-900 mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-slate-900">
+                  Password
+                </label>
+                <a href="/forgot-password" className="text-sm text-blue-600 font-medium hover:text-blue-700">
+                  Forgot password?
+                </a>
+              </div>
               <input
                 id="password"
                 type="password"
@@ -88,6 +93,12 @@ export default function LoginPage() {
             Don&apos;t have an account?{' '}
             <a href="/signup" className="text-blue-600 font-semibold hover:text-blue-700">
               Sign up
+            </a>
+          </p>
+
+          <p className="mt-2 text-center text-sm text-slate-700">
+            <a href="/resend-verification" className="text-blue-600 font-medium hover:text-blue-700">
+              Resend verification email
             </a>
           </p>
         </div>
