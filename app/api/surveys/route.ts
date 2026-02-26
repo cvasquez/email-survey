@@ -15,6 +15,7 @@ export async function GET() {
       .from('surveys')
       .select('*, responses(count)')
       .eq('organization_id', orgId)
+      .eq('responses.is_suspected_bot', false)
       .order('created_at', { ascending: false })
 
     if (error) {
