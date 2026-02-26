@@ -45,6 +45,7 @@ export default function ResponsesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deletingSurvey, setDeletingSurvey] = useState(false)
   const [commentsOnly, setCommentsOnly] = useState(false)
+  const [hideBots, setHideBots] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,25 +132,33 @@ export default function ResponsesPage() {
     }
   }
 
+  const botCount = useMemo(() => {
+    return responses.filter((r) => r.is_suspected_bot).length
+  }, [responses])
+
+  const activeResponses = useMemo(() => {
+    return hideBots ? responses.filter((r) => !r.is_suspected_bot) : responses
+  }, [responses, hideBots])
+
   const answerCounts = useMemo(() => {
     const counts: Record<string, { total: number; withComments: number }> = {}
-    for (const r of responses) {
+    for (const r of activeResponses) {
       if (!counts[r.answer_value]) counts[r.answer_value] = { total: 0, withComments: 0 }
       counts[r.answer_value].total += 1
       if (r.free_response?.trim()) counts[r.answer_value].withComments += 1
     }
     return Object.entries(counts).sort((a, b) => b[1].total - a[1].total)
-  }, [responses])
+  }, [activeResponses])
 
   const totalComments = useMemo(() => {
-    return responses.filter((r) => r.free_response?.trim()).length
-  }, [responses])
+    return activeResponses.filter((r) => r.free_response?.trim()).length
+  }, [activeResponses])
 
   const locationBreakdowns = useMemo(() => {
     const countries: Record<string, number> = {}
     const usRegions: Record<string, number> = {}
 
-    for (const r of responses) {
+    for (const r of activeResponses) {
       if (!r.location) continue
       const parts = r.location.split(', ')
       if (parts.length < 2) continue
@@ -173,7 +182,7 @@ export default function ResponsesPage() {
     }
   }, [responses])
 
-  const filteredResponses = responses.filter((response) => {
+  const filteredResponses = activeResponses.filter((response) => {
     if (commentsOnly && !response.free_response?.trim()) return false
     if (!filter) return true
     const searchLower = filter.toLowerCase()
@@ -187,10 +196,10 @@ export default function ResponsesPage() {
   })
 
   const exportToCSV = () => {
-    if (responses.length === 0) return
+    if (activeResponses.length === 0) return
 
-    const headers = ['Timestamp', 'Answer Value', 'Free Response', 'Name', 'Hash MD5', 'IP Address', 'Location', 'Device']
-    const rows = responses.map((r) => [
+    const headers = ['Timestamp', 'Answer Value', 'Free Response', 'Name', 'Hash MD5', 'IP Address', 'Location', 'Device', 'Suspected Bot']
+    const rows = activeResponses.map((r) => [
       r.created_at,
       r.answer_value,
       (r.free_response || '').replace(/"/g, '""'),
@@ -199,6 +208,7 @@ export default function ResponsesPage() {
       r.ip_address || '',
       r.location || '',
       parseUserAgent(r.user_agent),
+      r.is_suspected_bot ? 'Yes' : 'No',
     ])
 
     const csvContent = [
@@ -227,15 +237,15 @@ export default function ResponsesPage() {
   }
 
   const copyStats = () => {
-    if (responses.length === 0) return
+    if (activeResponses.length === 0) return
 
     const lines: string[] = []
     lines.push(survey?.title || 'Survey Results')
-    lines.push(`${responses.length} total responses, ${totalComments} with comments`)
+    lines.push(`${activeResponses.length} total responses, ${totalComments} with comments`)
     lines.push('')
     lines.push('The Results:')
     for (const [value, { total, withComments }] of answerCounts) {
-      const pct = responses.length > 0 ? Math.round((total / responses.length) * 100) : 0
+      const pct = activeResponses.length > 0 ? Math.round((total / activeResponses.length) * 100) : 0
       const commentPct = total > 0 ? Math.round((withComments / total) * 100) : 0
       const pctOfAllComments = totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0
       lines.push(`${value}: ${total} (${pct}%). ${commentPct}% commented for ${pctOfAllComments}% of all comments`)
@@ -300,7 +310,7 @@ export default function ResponsesPage() {
             </button>
             <button
               onClick={copyStats}
-              disabled={responses.length === 0}
+              disabled={activeResponses.length === 0}
               className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition disabled:opacity-50"
             >
               {copiedStats ? 'Copied!' : 'Copy Stats'}
@@ -319,7 +329,10 @@ export default function ResponsesPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Total Responses</p>
-            <p className="text-2xl font-bold text-gray-900">{responses.length}</p>
+            <p className="text-2xl font-bold text-gray-900">{activeResponses.length}</p>
+            {botCount > 0 && hideBots && (
+              <p className="text-xs text-gray-400 mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
+            )}
           </div>
           {answerCounts.map(([value, { total, withComments }]) => (
             <div key={value} className="bg-white rounded-lg shadow-sm p-4">
@@ -327,7 +340,7 @@ export default function ResponsesPage() {
               <p className="text-2xl font-bold text-gray-900">
                 {total}
                 <span className="text-sm font-normal text-gray-500 ml-1">
-                  ({responses.length > 0 ? Math.round((total / responses.length) * 100) : 0}%)
+                  ({activeResponses.length > 0 ? Math.round((total / activeResponses.length) * 100) : 0}%)
                 </span>
               </p>
               <p className="text-xs text-gray-500 mt-1">
@@ -341,7 +354,7 @@ export default function ResponsesPage() {
         </div>
 
         {/* Visualizations */}
-        {responses.length > 0 && (
+        {activeResponses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             <div ref={chartRef} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex items-center justify-between mb-3">
@@ -353,7 +366,7 @@ export default function ResponsesPage() {
                   Save PNG
                 </button>
               </div>
-              <AnswerDistributionChart answerCounts={answerCounts} totalResponses={responses.length} />
+              <AnswerDistributionChart answerCounts={answerCounts} totalResponses={activeResponses.length} />
             </div>
             {locationBreakdowns.countries.length > 0 && (
               <div ref={mapRef} className="bg-white rounded-lg shadow-sm p-4">
@@ -423,10 +436,21 @@ export default function ResponsesPage() {
               />
               Comments only
             </label>
+            {botCount > 0 && (
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  checked={hideBots}
+                  onChange={(e) => setHideBots(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                Hide bots ({botCount})
+              </label>
+            )}
           </div>
           <button
             onClick={exportToCSV}
-            disabled={responses.length === 0}
+            disabled={activeResponses.length === 0}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             Export to CSV
@@ -438,7 +462,9 @@ export default function ResponsesPage() {
             <p className="text-gray-700">
               {responses.length === 0
                 ? 'No responses yet. Share your survey link to start collecting responses!'
-                : 'No responses match your filter.'}
+                : activeResponses.length === 0
+                  ? 'All responses were flagged as bots. Uncheck "Hide bots" to see them.'
+                  : 'No responses match your filter.'}
             </p>
           </div>
         ) : (

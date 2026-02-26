@@ -47,6 +47,7 @@ export type Response = {
   ip_address: string | null
   user_agent: string | null
   location: string | null
+  is_suspected_bot: boolean
 }
 
 export type CreateSurveyInput = {

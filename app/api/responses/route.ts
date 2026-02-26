@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { CreateResponseInput } from '@/types/database'
 import { ensureOrg } from '@/lib/org'
+import { isSuspectedBot } from '@/lib/bot-detection'
 
 export async function POST(request: Request) {
   try {
@@ -58,7 +59,10 @@ export async function POST(request: Request) {
       // Geolocation is best-effort, don't block response submission
     }
 
-    // HYBRID DEDUPLICATION (Option 3)
+    // Bot detection
+    const suspectedBot = isSuspectedBot(userAgent)
+
+    // HYBRID DEDUPLICATION
     let existingResponse = null
 
     if (body.hash_md5?.trim()) {
@@ -69,12 +73,12 @@ export async function POST(request: Request) {
         .eq('survey_id', body.survey_id)
         .eq('hash_md5', body.hash_md5.trim())
         .maybeSingle()
-      
+
       existingResponse = data
     } else if (ip) {
       // If no hash_md5, check by IP address (within last 24 hours)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      
+
       const { data } = await supabase
         .from('responses')
         .select('*')
@@ -82,12 +86,42 @@ export async function POST(request: Request) {
         .eq('ip_address', ip)
         .gte('created_at', twentyFourHoursAgo)
         .maybeSingle()
-      
+
       existingResponse = data
     }
 
-    // If response already exists, return minimal info (no PII)
     if (existingResponse) {
+      // If existing response was from a bot and current request is from a real user,
+      // override it with the real user's answer
+      if (existingResponse.is_suspected_bot && !suspectedBot) {
+        const { data: updated, error: updateError } = await supabase
+          .from('responses')
+          .update({
+            answer_value: body.answer_value.trim(),
+            ip_address: ip || null,
+            user_agent: userAgent || null,
+            location: location,
+            is_suspected_bot: false,
+          })
+          .eq('id', existingResponse.id)
+          .select()
+          .single()
+
+        if (updateError) {
+          console.error('Error overriding bot response:', updateError)
+          return NextResponse.json({ error: updateError.message }, { status: 500 })
+        }
+
+        return NextResponse.json({
+          response: {
+            id: updated.id,
+            answer_value: updated.answer_value,
+            has_details: !!(updated.free_response?.trim() || updated.respondent_name?.trim()),
+          },
+        }, { status: 200 })
+      }
+
+      // Otherwise return existing (standard dedup)
       return NextResponse.json({
         response: {
           id: existingResponse.id,
@@ -97,7 +131,7 @@ export async function POST(request: Request) {
       }, { status: 200 })
     }
 
-    // Insert new response (free_response can be null for initial tracking)
+    // Insert new response
     const { data: response, error } = await supabase
       .from('responses')
       .insert({
@@ -109,6 +143,7 @@ export async function POST(request: Request) {
         ip_address: ip || null,
         user_agent: userAgent || null,
         location: location,
+        is_suspected_bot: suspectedBot,
       })
       .select()
       .single()
@@ -116,6 +151,29 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Error inserting response:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // After inserting, check for multiple different answers from same IP within 5 minutes
+    // This catches email security scanners that click all answer links
+    if (ip) {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const { data: recentFromSameIp } = await supabase
+        .from('responses')
+        .select('id, answer_value')
+        .eq('survey_id', body.survey_id)
+        .eq('ip_address', ip)
+        .gte('created_at', fiveMinutesAgo)
+
+      if (recentFromSameIp && recentFromSameIp.length > 1) {
+        const uniqueAnswers = new Set(recentFromSameIp.map((r) => r.answer_value))
+        if (uniqueAnswers.size > 1) {
+          // Multiple different answers from same IP = likely a scanner
+          await supabase
+            .from('responses')
+            .update({ is_suspected_bot: true })
+            .in('id', recentFromSameIp.map((r) => r.id))
+        }
+      }
     }
 
     return NextResponse.json({
