@@ -1,10 +1,15 @@
+import Image from 'next/image'
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED]">
       {/* Nav */}
       <nav className="border-b border-[#262626]">
         <div className="mx-auto max-w-5xl flex items-center justify-between h-14 px-6">
-          <span className="text-lg font-semibold tracking-tight">Backtalk</span>
+          <span className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Image src="/backtalk-icon.svg" alt="Backtalk" width={28} height={28} />
+            Backtalk
+          </span>
           <div className="flex items-center gap-3">
             <a
               href="/login"

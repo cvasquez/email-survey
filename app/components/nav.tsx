@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 
@@ -49,7 +50,8 @@ export function Nav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14 items-center">
           <div className="flex items-center gap-6">
-            <a href="/dashboard" className="text-lg font-semibold text-[#EDEDED] hover:text-white transition-colors">
+            <a href="/dashboard" className="flex items-center gap-2 text-lg font-semibold text-[#EDEDED] hover:text-white transition-colors">
+              <Image src="/backtalk-icon.svg" alt="Backtalk" width={28} height={28} />
               Backtalk
             </a>
             {orgs.length > 1 && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
@@ -44,7 +45,10 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
       <div className="max-w-sm w-full px-6">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-semibold text-[#EDEDED]">Backtalk</Link>
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#EDEDED]">
+            <Image src="/backtalk-icon.svg" alt="Backtalk" width={32} height={32} />
+            Backtalk
+          </Link>
         </div>
 
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
