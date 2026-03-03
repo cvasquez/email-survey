@@ -44,22 +44,22 @@ export default function NewSurveyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0A0A0A]">
       <Nav />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold mb-6">Create New Survey</h2>
+      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
+          <h2 className="text-xl font-semibold text-[#EDEDED] mb-6">Create New Survey</h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+            <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-[#A1A1A1] mb-2">
                 Survey Title
               </label>
               <input
@@ -69,9 +69,9 @@ export default function NewSurveyPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="e.g., Product Feedback Survey"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
               />
-              <p className="mt-1 text-sm text-gray-700">
+              <p className="mt-1 text-sm text-[#666666]">
                 Give your survey a descriptive title for your own reference
               </p>
             </div>
@@ -83,30 +83,30 @@ export default function NewSurveyPage() {
                   type="checkbox"
                   checked={requireName}
                   onChange={(e) => setRequireName(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 rounded border-[#333333] bg-[#1A1A1A] text-[#3B82F6] focus:ring-[#3B82F6] focus:ring-offset-0"
                 />
               </div>
               <div className="ml-3">
-                <label htmlFor="requireName" className="font-medium text-gray-700">
+                <label htmlFor="requireName" className="font-medium text-[#EDEDED]">
                   Require respondent name
                 </label>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-[#666666]">
                   When enabled, respondents must provide their name along with their response
                 </p>
               </div>
             </div>
 
-            <div className="pt-4 space-x-4">
+            <div className="pt-4 flex items-center space-x-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-[#3B82F6] text-white font-medium text-sm rounded-md hover:bg-[#2563EB] focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 focus:ring-offset-[#141414] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'Creating...' : 'Create Survey'}
               </button>
               <a
                 href="/dashboard"
-                className="inline-block px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                className="inline-block px-6 py-2 text-sm text-[#A1A1A1] border border-[#333333] rounded-md hover:text-[#EDEDED] hover:border-[#444] transition-colors"
               >
                 Cancel
               </a>

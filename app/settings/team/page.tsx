@@ -179,20 +179,20 @@ export default function TeamSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0A0A0A]">
       <Nav />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-bold mb-6">Team Settings</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-[#EDEDED]">Team Settings</h2>
 
         {loading && (
           <div className="text-center py-12">
-            <p className="text-gray-700">Loading...</p>
+            <p className="text-[#A1A1A1]">Loading...</p>
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded mb-6">
+          <div className="p-4 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -200,15 +200,15 @@ export default function TeamSettingsPage() {
         {!loading && !error && org && (
           <>
             {/* Organization Name */}
-            <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-3">Organization</h3>
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
+              <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">Organization</h3>
               {editingName ? (
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRenameOrg()
@@ -220,7 +220,7 @@ export default function TeamSettingsPage() {
                   />
                   <button
                     onClick={handleRenameOrg}
-                    className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                    className="px-3 py-2 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] transition-colors"
                   >
                     Save
                   </button>
@@ -229,18 +229,18 @@ export default function TeamSettingsPage() {
                       setOrgName(org.name)
                       setEditingName(false)
                     }}
-                    className="px-3 py-2 text-gray-600 text-sm hover:text-gray-900"
+                    className="px-3 py-2 text-[#A1A1A1] text-sm hover:text-[#EDEDED] transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-900">{org.name}</span>
+                  <span className="text-[#EDEDED]">{org.name}</span>
                   {isOwner && (
                     <button
                       onClick={() => setEditingName(true)}
-                      className="text-sm text-blue-600 hover:text-blue-800"
+                      className="text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
                     >
                       Rename
                     </button>
@@ -250,26 +250,26 @@ export default function TeamSettingsPage() {
             </div>
 
             {/* Members */}
-            <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-3">
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
+              <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">
                 Members ({members.length})
               </h3>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-[#262626]">
                 {members.map((member) => (
                   <div
                     key={member.id}
                     className="flex items-center justify-between py-3"
                   >
                     <div>
-                      <span className="text-sm text-gray-900">
+                      <span className="text-sm text-[#EDEDED]">
                         {member.email}
                       </span>
-                      <span className="ml-2 text-xs text-gray-500 capitalize">
+                      <span className="ml-2 text-xs text-[#666666] capitalize">
                         {member.role}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <span className="text-gray-500">
+                      <span className="text-[#666666]">
                         {formatDate(member.created_at)}
                       </span>
                       {isOwner && members.length > 1 && (
@@ -278,7 +278,7 @@ export default function TeamSettingsPage() {
                             handleRemoveMember(member.user_id, member.email)
                           }
                           disabled={removingId === member.user_id}
-                          className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                          className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50 transition-colors"
                         >
                           {removingId === member.user_id
                             ? 'Removing...'
@@ -293,33 +293,33 @@ export default function TeamSettingsPage() {
 
             {/* Pending Invites */}
             {invites.length > 0 && (
-              <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-3">
+              <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
+                <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">
                   Pending Invites ({invites.length})
                 </h3>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-[#262626]">
                   {invites.map((invite) => (
                     <div
                       key={invite.id}
                       className="flex items-center justify-between py-3"
                     >
                       <div>
-                        <span className="text-sm text-gray-900">
+                        <span className="text-sm text-[#EDEDED]">
                           {invite.email}
                         </span>
-                        <span className="ml-2 text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                        <span className="ml-2 text-xs text-[#EAB308] bg-[#EAB308]/10 px-2 py-0.5 rounded-full">
                           Pending
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-sm">
-                        <span className="text-gray-500">
+                        <span className="text-[#666666]">
                           {formatDate(invite.created_at)}
                         </span>
                         {isOwner && (
                           <button
                             onClick={() => handleRevokeInvite(invite.id)}
                             disabled={revokingId === invite.id}
-                            className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                            className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50 transition-colors"
                           >
                             {revokingId === invite.id
                               ? 'Revoking...'
@@ -335,27 +335,27 @@ export default function TeamSettingsPage() {
 
             {/* Invite Form */}
             {isOwner && (
-              <div className="bg-white shadow-sm rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-3">Invite Member</h3>
+              <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
+                <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">Invite Member</h3>
                 <form onSubmit={handleInvite} className="flex items-center gap-3">
                   <input
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
                     required
                   />
                   <button
                     type="submit"
                     disabled={inviting}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] disabled:opacity-50 transition-colors"
                   >
                     {inviting ? 'Inviting...' : 'Invite'}
                   </button>
                 </form>
                 {inviteMessage && (
-                  <p className="mt-3 text-sm text-gray-700">{inviteMessage}</p>
+                  <p className="mt-3 text-sm text-[#A1A1A1]">{inviteMessage}</p>
                 )}
               </div>
             )}

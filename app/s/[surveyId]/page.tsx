@@ -116,7 +116,7 @@ function SurveyResponseForm() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
-        <p className="text-slate-700">Just one sec...</p>
+        <p className="text-gray-500">Just one sec...</p>
       </div>
     )
   }
@@ -126,8 +126,8 @@ function SurveyResponseForm() {
       <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
-            <h1 className="text-2xl font-bold mb-4 text-red-600">Survey Not Found</h1>
-            <p className="text-slate-700">{error}</p>
+            <h1 className="text-2xl font-bold mb-4 text-[#EF4444]">Survey Not Found</h1>
+            <p className="text-gray-600">{error}</p>
           </div>
         </div>
       </div>
@@ -139,8 +139,8 @@ function SurveyResponseForm() {
       <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
-            <h1 className="text-2xl font-bold mb-4 text-slate-900">Survey Closed</h1>
-            <p className="text-slate-700">This survey is no longer accepting responses.</p>
+            <h1 className="text-2xl font-bold mb-4 text-gray-900">Survey Closed</h1>
+            <p className="text-gray-600">This survey is no longer accepting responses.</p>
           </div>
         </div>
       </div>
@@ -149,7 +149,7 @@ function SurveyResponseForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
+      <div className="min-h-screen flex flex-col items-start sm:items-center justify-center bg-white pt-8 sm:pt-0">
         <div className="max-w-md w-full px-6">
           <div className="border border-slate-200 rounded-xl shadow-sm p-8">
             <div className="text-center">
@@ -168,10 +168,13 @@ function SurveyResponseForm() {
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold mb-2 text-slate-900">Thank You!</h1>
-              <p className="text-slate-700">Your response has been submitted successfully.</p>
+              <h1 className="text-2xl font-bold mb-2 text-gray-900">Thank You!</h1>
+              <p className="text-gray-600">Your response has been submitted successfully.</p>
             </div>
           </div>
+        </div>
+        <div className="mt-12 mb-6">
+          <span className="text-xs text-gray-400">Powered by Backtalk</span>
         </div>
       </div>
     )
@@ -180,18 +183,18 @@ function SurveyResponseForm() {
   const displayAnswer = formatAnswerValue(answerValue)
 
   return (
-    <div className="min-h-screen flex items-start sm:items-center justify-center bg-white pt-8 sm:pt-0 sm:py-12 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white pt-8 sm:pt-0 sm:py-12 px-4">
       <div className="max-w-2xl w-full">
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-lg font-semibold text-slate-900 mb-3">
+              <label className="block text-lg font-semibold text-gray-900 mb-3">
                 Tell me about your answer: {displayAnswer}
               </label>
               <textarea
@@ -199,14 +202,14 @@ function SurveyResponseForm() {
                 onChange={(e) => setFreeResponse(e.target.value)}
                 rows={6}
                 placeholder="Share your thoughts here... (optional)"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y text-slate-900"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent resize-y text-slate-900"
               />
-              <p className="mt-2 text-sm text-slate-600">Your initial response has been recorded. You can optionally provide more details above.</p>
+              <p className="mt-2 text-sm text-gray-500">Your initial response has been recorded. You can optionally provide more details above.</p>
             </div>
 
             {survey.require_name && (
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-slate-900 mb-2">
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
                   Your Name
                 </label>
                 <input
@@ -215,7 +218,7 @@ function SurveyResponseForm() {
                   value={respondentName}
                   onChange={(e) => setRespondentName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-slate-900"
                 />
               </div>
             )}
@@ -223,11 +226,14 @@ function SurveyResponseForm() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
+              className="w-full py-3 px-4 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
             >
               {submitting ? 'Updating...' : 'Add More Details'}
             </button>
           </form>
+      </div>
+      <div className="mt-12 mb-6">
+        <span className="text-xs text-gray-400">Powered by Backtalk</span>
       </div>
     </div>
   )
@@ -235,7 +241,7 @@ function SurveyResponseForm() {
 
 export default function SurveyResponsePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><p className="text-slate-700">Loading...</p></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><p className="text-gray-500">Loading...</p></div>}>
       <SurveyResponseForm />
     </Suspense>
   )

@@ -258,7 +258,7 @@ export default function ResponsesPage() {
 
   const downloadPng = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
-    const canvas = await html2canvas(ref.current, { backgroundColor: '#ffffff', scale: 2 })
+    const canvas = await html2canvas(ref.current, { backgroundColor: '#141414', scale: 2 })
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
     link.href = url
@@ -268,19 +268,19 @@ export default function ResponsesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-700">Loading responses...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+        <p className="text-[#A1A1A1]">Loading responses...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
         <div className="max-w-md w-full px-6">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h1 className="text-2xl font-bold mb-4 text-red-600">Error</h1>
-            <p className="text-gray-700 mb-4">{error}</p>
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
+            <h1 className="text-2xl font-semibold mb-4 text-[#EF4444]">Error</h1>
+            <p className="text-[#A1A1A1] mb-4">{error}</p>
             <a
               href="/dashboard"
               className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -294,31 +294,31 @@ export default function ResponsesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0A0A0A]">
       <Nav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">{survey?.title}</h2>
+          <h2 className="text-2xl font-semibold text-[#EDEDED] mb-2">{survey?.title}</h2>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={copyLink}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition"
+              className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition"
             >
               {copied ? 'Copied!' : 'Copy Link'}
             </button>
             <button
               onClick={copyStats}
               disabled={activeResponses.length === 0}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition disabled:opacity-50"
+              className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition disabled:opacity-50"
             >
               {copiedStats ? 'Copied!' : 'Copy Stats'}
             </button>
             <button
               onClick={deleteSurvey}
               disabled={deletingSurvey}
-              className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition disabled:opacity-50"
+              className="px-3 py-1 text-sm text-[#EF4444] hover:text-[#DC2626] hover:bg-[#EF4444]/10 rounded-md transition disabled:opacity-50"
             >
               {deletingSurvey ? 'Deleting...' : 'Delete Survey'}
             </button>
@@ -327,26 +327,26 @@ export default function ResponsesPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <p className="text-sm text-gray-600">Total Responses</p>
-            <p className="text-2xl font-bold text-gray-900">{activeResponses.length}</p>
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <p className="text-sm text-[#A1A1A1]">Total Responses</p>
+            <p className="text-2xl font-semibold text-[#EDEDED]">{activeResponses.length}</p>
             {botCount > 0 && hideBots && (
-              <p className="text-xs text-gray-400 mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
+              <p className="text-xs text-[#666666] mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
             )}
           </div>
           {answerCounts.map(([value, { total, withComments }]) => (
-            <div key={value} className="bg-white rounded-lg shadow-sm p-4">
-              <p className="text-sm text-gray-600 truncate">{value}</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div key={value} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+              <p className="text-sm text-[#A1A1A1] truncate">{value}</p>
+              <p className="text-2xl font-semibold text-[#EDEDED]">
                 {total}
-                <span className="text-sm font-normal text-gray-500 ml-1">
+                <span className="text-sm font-normal text-[#666666] ml-1">
                   ({activeResponses.length > 0 ? Math.round((total / activeResponses.length) * 100) : 0}%)
                 </span>
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-[#666666] mt-1">
                 {total > 0 ? Math.round((withComments / total) * 100) : 0}% commented
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-[#666666]">
                 {totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0}% of all comments
               </p>
             </div>
@@ -356,12 +356,12 @@ export default function ResponsesPage() {
         {/* Visualizations */}
         {activeResponses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <div ref={chartRef} className="bg-white rounded-lg shadow-sm p-4">
+            <div ref={chartRef} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-gray-600">Answer Distribution</p>
+                <p className="text-sm font-medium text-[#A1A1A1]">Answer Distribution</p>
                 <button
                   onClick={() => downloadPng(chartRef, `${survey?.title || 'chart'}-distribution.png`)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
+                  className="text-xs text-[#666666] hover:text-[#A1A1A1]"
                 >
                   Save PNG
                 </button>
@@ -369,12 +369,12 @@ export default function ResponsesPage() {
               <AnswerDistributionChart answerCounts={answerCounts} totalResponses={activeResponses.length} />
             </div>
             {locationBreakdowns.countries.length > 0 && (
-              <div ref={mapRef} className="bg-white rounded-lg shadow-sm p-4">
+              <div ref={mapRef} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-medium text-gray-600">Response Locations</p>
+                  <p className="text-sm font-medium text-[#A1A1A1]">Response Locations</p>
                   <button
                     onClick={() => downloadPng(mapRef, `${survey?.title || 'map'}-locations.png`)}
-                    className="text-xs text-gray-400 hover:text-gray-600"
+                    className="text-xs text-[#666666] hover:text-[#A1A1A1]"
                   >
                     Save PNG
                   </button>
@@ -389,26 +389,26 @@ export default function ResponsesPage() {
         {(locationBreakdowns.countries.length > 0 || locationBreakdowns.usRegions.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {locationBreakdowns.countries.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <p className="text-sm font-medium text-gray-600 mb-2">By Country</p>
+              <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+                <p className="text-sm font-medium text-[#A1A1A1] mb-2">By Country</p>
                 <div className="space-y-1">
                   {locationBreakdowns.countries.map(([country, count]) => (
                     <div key={country} className="flex justify-between text-sm">
-                      <span className="text-gray-900">{country}</span>
-                      <span className="text-gray-500">{count}</span>
+                      <span className="text-[#EDEDED]">{country}</span>
+                      <span className="text-[#666666]">{count}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
             {locationBreakdowns.usRegions.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <p className="text-sm font-medium text-gray-600 mb-2">US by Region</p>
+              <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+                <p className="text-sm font-medium text-[#A1A1A1] mb-2">US by Region</p>
                 <div className="space-y-1">
                   {locationBreakdowns.usRegions.map(([region, count]) => (
                     <div key={region} className="flex justify-between text-sm">
-                      <span className="text-gray-900">{region}</span>
-                      <span className="text-gray-500">{count}</span>
+                      <span className="text-[#EDEDED]">{region}</span>
+                      <span className="text-[#666666]">{count}</span>
                     </div>
                   ))}
                 </div>
@@ -425,24 +425,24 @@ export default function ResponsesPage() {
               placeholder="Filter responses..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64"
+              className="px-4 py-2 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] w-full sm:w-64"
             />
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap">
+            <label className="flex items-center gap-2 text-sm text-[#A1A1A1] cursor-pointer whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={commentsOnly}
                 onChange={(e) => setCommentsOnly(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-[#333333] bg-[#1A1A1A] text-[#3B82F6] focus:ring-[#3B82F6]"
               />
               Comments only
             </label>
             {botCount > 0 && (
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap">
+              <label className="flex items-center gap-2 text-sm text-[#A1A1A1] cursor-pointer whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={hideBots}
                   onChange={(e) => setHideBots(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-[#333333] bg-[#1A1A1A] text-[#3B82F6] focus:ring-[#3B82F6]"
                 />
                 Hide bots ({botCount})
               </label>
@@ -451,15 +451,15 @@ export default function ResponsesPage() {
           <button
             onClick={exportToCSV}
             disabled={activeResponses.length === 0}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="px-4 py-2 bg-[#3B82F6] text-white rounded-md hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             Export to CSV
           </button>
         </div>
 
         {filteredResponses.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-700">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-8 text-center">
+            <p className="text-[#A1A1A1]">
               {responses.length === 0
                 ? 'No responses yet. Share your survey link to start collecting responses!'
                 : activeResponses.length === 0
@@ -472,29 +472,29 @@ export default function ResponsesPage() {
             {/* Mobile card layout */}
             <div className="space-y-4 md:hidden">
               {filteredResponses.map((response) => (
-                <div key={response.id} className="bg-white rounded-lg shadow-sm p-4">
+                <div key={response.id} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">{response.answer_value}</span>
+                    <span className="text-sm font-medium text-[#EDEDED]">{response.answer_value}</span>
                     <button
                       onClick={() => deleteResponse(response.id)}
                       disabled={deletingId === response.id}
-                      className="text-red-600 text-sm disabled:opacity-50"
+                      className="text-[#EF4444] text-sm disabled:opacity-50"
                     >
                       {deletingId === response.id ? 'Deleting...' : 'Delete'}
                     </button>
                   </div>
                   {response.free_response && (
                     <div className="group/resp relative mb-2">
-                      <p className="text-sm text-gray-900">{response.free_response}</p>
+                      <p className="text-sm text-[#EDEDED]">{response.free_response}</p>
                       <button
                         onClick={() => copyResponse(response)}
-                        className="mt-1 text-xs text-gray-400 hover:text-gray-600"
+                        className="mt-1 text-xs text-[#666666] hover:text-[#A1A1A1]"
                       >
                         {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#666666]">
                     <span>{formatDate(response.created_at)}</span>
                     {survey?.require_name && response.respondent_name && (
                       <span>{response.respondent_name}</span>
@@ -510,9 +510,9 @@ export default function ResponsesPage() {
             </div>
 
             {/* Desktop table layout */}
-            <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="hidden md:block bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                <table className="min-w-full divide-y divide-[#262626] table-fixed">
                   <colgroup>
                     <col className="w-[100px]" />
                     <col className="w-[100px]" />
@@ -523,51 +523,51 @@ export default function ResponsesPage() {
                     <col className="w-[100px]" />
                     <col className="w-[70px]" />
                   </colgroup>
-                  <thead className="bg-gray-50">
+                  <thead>
                     <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Answer
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Response
                       </th>
                       {survey?.require_name && (
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                           Name
                         </th>
                       )}
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Device
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
                         Hash
                       </th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#666666] uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-[#262626]">
                     {filteredResponses.map((response) => (
-                      <tr key={response.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-3 text-xs text-gray-500">
+                      <tr key={response.id} className="hover:bg-[#1A1A1A] transition-colors">
+                        <td className="px-3 py-3 text-xs text-[#666666]">
                           {formatDate(response.created_at)}
                         </td>
-                        <td className="px-3 py-3 text-sm font-medium text-gray-900 truncate">
+                        <td className="px-3 py-3 text-sm font-medium text-[#EDEDED] truncate">
                           {response.answer_value}
                         </td>
-                        <td className="px-3 py-3 text-sm text-gray-900">
+                        <td className="px-3 py-3 text-sm text-[#EDEDED]">
                           {response.free_response ? (
                             <div className="group/resp relative">
                               <span>{response.free_response}</span>
                               <button
                                 onClick={() => copyResponse(response)}
-                                className="ml-2 text-xs text-gray-400 hover:text-gray-600 opacity-0 group-hover/resp:opacity-100 transition-opacity"
+                                className="ml-2 text-xs text-[#666666] hover:text-[#A1A1A1] opacity-0 group-hover/resp:opacity-100 transition-opacity"
                               >
                                 {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
                               </button>
@@ -575,24 +575,24 @@ export default function ResponsesPage() {
                           ) : '-'}
                         </td>
                         {survey?.require_name && (
-                          <td className="px-3 py-3 text-sm text-gray-700 truncate">
+                          <td className="px-3 py-3 text-sm text-[#A1A1A1] truncate">
                             {response.respondent_name || '-'}
                           </td>
                         )}
-                        <td className="px-3 py-3 text-xs text-gray-500 truncate">
+                        <td className="px-3 py-3 text-xs text-[#666666] truncate">
                           {response.location || '-'}
                         </td>
-                        <td className="px-3 py-3 text-xs text-gray-500 truncate">
+                        <td className="px-3 py-3 text-xs text-[#666666] truncate">
                           {parseUserAgent(response.user_agent)}
                         </td>
-                        <td className="px-3 py-3 text-xs text-gray-500 font-mono truncate">
+                        <td className="px-3 py-3 text-xs text-[#666666] font-mono truncate">
                           {response.hash_md5 ? response.hash_md5.substring(0, 8) : '-'}
                         </td>
                         <td className="px-3 py-3 text-right text-sm">
                           <button
                             onClick={() => deleteResponse(response.id)}
                             disabled={deletingId === response.id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50"
                           >
                             {deletingId === response.id ? '...' : '❌'}
                           </button>

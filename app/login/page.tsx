@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -35,20 +36,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="max-w-md w-full px-6">
-        <div className="border border-slate-200 rounded-xl shadow-sm p-8">
-          <h1 className="text-3xl font-bold mb-6 text-center text-slate-900">Log In</h1>
+    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+      <div className="max-w-sm w-full px-6">
+        <div className="text-center mb-8">
+          <Link href="/" className="text-2xl font-semibold text-[#EDEDED]">Backtalk</Link>
+        </div>
+
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
+          <h1 className="text-xl font-semibold text-[#EDEDED] mb-6 text-center">Log In</h1>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#A1A1A1] mb-2">
                 Email
               </label>
               <input
@@ -57,16 +62,16 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900"
+                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-slate-900">
+                <label htmlFor="password" className="block text-sm font-medium text-[#A1A1A1]">
                   Password
                 </label>
-                <a href="/forgot-password" className="text-sm text-blue-600 font-medium hover:text-blue-700">
+                <a href="/forgot-password" className="text-sm text-[#3B82F6] font-medium hover:text-[#2563EB]">
                   Forgot password?
                 </a>
               </div>
@@ -76,28 +81,28 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900"
+                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
+              className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-md hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 focus:ring-offset-[#141414] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-700">
+          <p className="mt-6 text-center text-sm text-[#666666]">
             Don&apos;t have an account?{' '}
-            <a href="/signup" className="text-blue-600 font-semibold hover:text-blue-700">
+            <a href="/signup" className="text-[#3B82F6] font-medium hover:text-[#2563EB]">
               Sign up
             </a>
           </p>
 
-          <p className="mt-2 text-center text-sm text-slate-700">
-            <a href="/resend-verification" className="text-blue-600 font-medium hover:text-blue-700">
+          <p className="mt-2 text-center text-sm">
+            <a href="/resend-verification" className="text-[#666666] hover:text-[#A1A1A1] transition-colors">
               Resend verification email
             </a>
           </p>

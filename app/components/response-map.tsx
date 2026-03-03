@@ -48,8 +48,8 @@ export function ResponseMap({ countries }: Props) {
 
   function getColor(geoName: string): string {
     const count = countryData.get(geoName) || 0
-    if (count === 0) return '#f3f4f6'
-    const intensity = Math.max(0.2, count / maxCount)
+    if (count === 0) return '#1A1A1A'
+    const intensity = Math.max(0.3, count / maxCount)
     return `rgba(37, 99, 235, ${intensity})`
   }
 
@@ -75,7 +75,7 @@ export function ResponseMap({ countries }: Props) {
                   key={geo.rsmKey}
                   geography={geo}
                   fill={getColor(name)}
-                  stroke="#d1d5db"
+                  stroke="#262626"
                   strokeWidth={0.5}
                   onMouseEnter={() => {
                     if (count > 0) {
@@ -86,7 +86,7 @@ export function ResponseMap({ countries }: Props) {
                   onMouseLeave={() => setTooltip(null)}
                   style={{
                     default: { outline: 'none' },
-                    hover: { fill: count > 0 ? '#2563eb' : '#e5e7eb', outline: 'none' },
+                    hover: { fill: count > 0 ? '#2563eb' : '#262626', outline: 'none' },
                     pressed: { outline: 'none' },
                   }}
                 />
@@ -96,9 +96,9 @@ export function ResponseMap({ countries }: Props) {
         </Geographies>
       </ComposableMap>
       {tooltip && (
-        <div className="absolute top-2 right-2 bg-white border border-gray-200 rounded-lg shadow-sm px-3 py-2 text-sm pointer-events-none">
-          <p className="font-medium text-gray-900">{tooltip.name}</p>
-          <p className="text-gray-600">{tooltip.count} {tooltip.count === 1 ? 'response' : 'responses'}</p>
+        <div className="absolute top-2 right-2 bg-[#1A1A1A] border border-[#262626] rounded-lg shadow-sm px-3 py-2 text-sm pointer-events-none">
+          <p className="font-medium text-[#EDEDED]">{tooltip.name}</p>
+          <p className="text-[#A1A1A1]">{tooltip.count} {tooltip.count === 1 ? 'response' : 'responses'}</p>
         </div>
       )}
     </div>

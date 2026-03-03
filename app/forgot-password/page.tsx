@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ForgotPasswordPage() {
@@ -31,28 +32,32 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="max-w-md w-full px-6">
-        <div className="border border-slate-200 rounded-xl shadow-sm p-8">
-          <h1 className="text-3xl font-bold mb-2 text-center text-slate-900">Reset Password</h1>
-          <p className="text-sm text-slate-600 text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+      <div className="max-w-sm w-full px-6">
+        <div className="text-center mb-8">
+          <Link href="/" className="text-2xl font-semibold text-[#EDEDED]">Backtalk</Link>
+        </div>
+
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
+          <h1 className="text-xl font-semibold text-[#EDEDED] mb-2 text-center">Reset Password</h1>
+          <p className="text-sm text-[#666666] text-center mb-6">
             Enter your email and we&apos;ll send you a link to reset your password.
           </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
               {error}
             </div>
           )}
 
           {success ? (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] rounded-md text-sm">
               Check your email for a password reset link.
             </div>
           ) : (
             <form onSubmit={handleReset} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-[#A1A1A1] mb-2">
                   Email
                 </label>
                 <input
@@ -61,22 +66,22 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900"
+                  className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
+                className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-md hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 focus:ring-offset-[#141414] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
             </form>
           )}
 
-          <p className="mt-6 text-center text-sm text-slate-700">
-            <a href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
+          <p className="mt-6 text-center text-sm">
+            <a href="/login" className="text-[#3B82F6] font-medium hover:text-[#2563EB]">
               Back to login
             </a>
           </p>

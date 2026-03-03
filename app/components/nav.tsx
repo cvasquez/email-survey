@@ -45,18 +45,18 @@ export function Nav() {
   }
 
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-[#141414] border-b border-[#262626]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-4">
-            <a href="/dashboard" className="text-xl font-semibold text-gray-900 hover:text-gray-700">
-              Email Survey Tool
+        <div className="flex justify-between h-14 items-center">
+          <div className="flex items-center gap-6">
+            <a href="/dashboard" className="text-lg font-semibold text-[#EDEDED] hover:text-white transition-colors">
+              Backtalk
             </a>
             {orgs.length > 1 && (
               <select
                 value={currentOrgId || ''}
                 onChange={(e) => switchOrg(e.target.value)}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-sm border border-[#333333] rounded-md px-2 py-1.5 bg-[#1A1A1A] text-[#A1A1A1] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6]"
               >
                 {orgs.map((org) => (
                   <option key={org.id} value={org.id}>
@@ -66,28 +66,28 @@ export function Nav() {
               </select>
             )}
           </div>
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="flex items-center gap-6 text-sm">
             <a
               href="/dashboard"
-              className={`${pathname === '/dashboard' ? 'text-blue-600' : 'text-gray-700'} hover:text-gray-900`}
+              className={`${pathname === '/dashboard' ? 'text-white' : 'text-[#A1A1A1]'} hover:text-white transition-colors`}
             >
               Dashboard
             </a>
             <a
               href="/settings/team"
-              className={`${pathname === '/settings/team' ? 'text-blue-600' : 'text-gray-700'} hover:text-gray-900`}
+              className={`${pathname === '/settings/team' ? 'text-white' : 'text-[#A1A1A1]'} hover:text-white transition-colors`}
             >
               Team
             </a>
             <a
               href="/settings/account"
-              className={`${pathname === '/settings/account' ? 'text-blue-600' : 'text-gray-700'} hover:text-gray-900`}
+              className={`${pathname === '/settings/account' ? 'text-white' : 'text-[#A1A1A1]'} hover:text-white transition-colors`}
             >
               Account
             </a>
             <button
               onClick={handleLogout}
-              className="text-gray-700 hover:text-gray-900"
+              className="text-[#666666] hover:text-[#A1A1A1] transition-colors"
             >
               Log Out
             </button>
