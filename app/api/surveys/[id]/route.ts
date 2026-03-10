@@ -28,6 +28,40 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    await ensureOrg()
+    const supabase = await createClient()
+    const { title } = await request.json()
+
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
+
+    const { data: survey, error } = await supabase
+      .from('surveys')
+      .update({ title: title.trim() })
+      .eq('id', id)
+      .select('id, title')
+      .single()
+
+    if (error || !survey) {
+      return NextResponse.json({ error: error?.message || 'Survey not found' }, { status: error ? 500 : 404 })
+    }
+
+    return NextResponse.json({ survey })
+  } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

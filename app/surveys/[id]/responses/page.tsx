@@ -46,6 +46,8 @@ export default function ResponsesPage() {
   const [deletingSurvey, setDeletingSurvey] = useState(false)
   const [commentsOnly, setCommentsOnly] = useState(false)
   const [hideBots, setHideBots] = useState(true)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,6 +131,23 @@ export default function ResponsesPage() {
     } catch (err: any) {
       alert(err.message)
       setDeletingSurvey(false)
+    }
+  }
+
+  const renameSurvey = async () => {
+    if (!survey || !titleDraft.trim()) return
+    try {
+      const res = await fetch(`/api/surveys/${survey.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: titleDraft.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to rename survey')
+      setSurvey({ ...survey, title: titleDraft.trim() })
+      setEditingTitle(false)
+    } catch (err: any) {
+      alert(err.message)
     }
   }
 
@@ -300,7 +319,33 @@ export default function ResponsesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-[#EDEDED] mb-2">{survey?.title}</h2>
+          {editingTitle ? (
+            <div className="flex items-center gap-3 mb-2">
+              <input
+                type="text"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                className="text-2xl font-semibold bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-1 text-[#EDEDED] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') renameSurvey()
+                  if (e.key === 'Escape') setEditingTitle(false)
+                }}
+              />
+              <button onClick={renameSurvey} className="px-3 py-1 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] transition-colors">Save</button>
+              <button onClick={() => setEditingTitle(false)} className="px-3 py-1 text-[#A1A1A1] text-sm hover:text-[#EDEDED] transition-colors">Cancel</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-2xl font-semibold text-[#EDEDED]">{survey?.title}</h2>
+              <button
+                onClick={() => { setTitleDraft(survey?.title || ''); setEditingTitle(true) }}
+                className="text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+              >
+                Rename
+              </button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={copyLink}

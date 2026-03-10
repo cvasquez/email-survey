@@ -210,7 +210,7 @@ function SurveyResponseForm() {
             {survey.require_name && (
               <div>
                 <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Your Name
+                  Your Name <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   id="name"
@@ -228,7 +228,7 @@ function SurveyResponseForm() {
               disabled={submitting}
               className="w-full py-3 px-4 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
             >
-              {submitting ? 'Updating...' : 'Add More Details'}
+              {submitting ? 'Submitting...' : 'Submit'}
             </button>
           </form>
       </div>
