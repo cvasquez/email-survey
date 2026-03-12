@@ -11,11 +11,11 @@ npm run lint         # ESLint
 npm start            # Start production server
 ```
 
-No test framework is configured. Testing is manual (see TESTING.md).
+No test framework is configured. Testing is manual (see [TESTING.md](TESTING.md)). Setup instructions in [SETUP.md](SETUP.md).
 
 ## Architecture
 
-Email survey tool for embedding click-tracked surveys in email campaigns (primarily AWeber). Recipients click a pre-answered link in an email, optionally add a comment, and the response is recorded.
+**Backtalk** — one-click email survey tool for embedding click-tracked surveys in email campaigns (primarily AWeber). Recipients click a pre-answered link in an email, optionally add a comment, and the response is recorded.
 
 ### Tech Stack
 
@@ -23,12 +23,22 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS + Supabase (PostgreSQL, Auth
 
 ### Route Layout
 
-- **`/s/[surveyId]`** — Public survey response form (no auth). Two-step flow: initial click POSTs answer immediately, then user can optionally PATCH with comment/name.
+- **`/s/[surveyId]`** — Public survey response form (no auth, light-themed). Two-step flow: initial click POSTs answer immediately, then user can optionally PATCH with comment/name.
 - **`/dashboard`** — Protected survey list with response counts (excludes bots).
 - **`/surveys/new`** — Create survey form.
-- **`/surveys/[id]/responses`** — Analytics dashboard with charts, geo map, filtering, CSV/PNG export.
+- **`/surveys/[id]/responses`** — Analytics dashboard with charts, geo map, filtering, inline title editing, CSV/PNG export.
 - **`/settings/account`, `/settings/team`** — User and team management.
 - **`/login`, `/signup`, `/forgot-password`, `/resend-verification`, `/auth/confirm`** — Auth flows.
+
+### Design System
+
+Dark-first UI (Linear/Vercel aesthetic) with Inter font. Color tokens as CSS variables in [app/globals.css](app/globals.css):
+- **Backgrounds**: page `#0A0A0A`, surface `#141414`, elevated `#1A1A1A`
+- **Borders**: subtle `#262626`, emphasis `#333333`
+- **Text**: primary `#EDEDED`, secondary `#A1A1A1`, muted `#666666`
+- **Semantic**: accent `#3B82F6`, success `#22C55E`, error `#EF4444`, warning `#EAB308`
+
+No shadows — use borders and subtle background differences. The public survey form (`/s/[surveyId]`) is the exception: it uses a light/white theme since email recipients land there directly.
 
 ### Middleware
 
@@ -57,6 +67,13 @@ Four clients in `lib/supabase/`, each for a different context:
 ### Response Deduplication
 
 POST `/api/responses` deduplicates by `hash_md5` (AWeber subscriber hash) if present, otherwise by IP address within a 24-hour window. A real user submission can replace an existing bot-flagged response.
+
+### API Patterns
+
+- **Error responses**: Always `{ error: string }` with appropriate HTTP status codes.
+- **Public routes** (POST `/api/responses`, GET `/api/surveys/[id]`): Use `createAdminClient()` to bypass RLS.
+- **Protected routes**: Call `ensureOrg()` first; catch blocks check `error.message === 'Unauthorized'` and return 401.
+- **IP detection**: `x-forwarded-for` (first entry) with `x-real-ip` fallback.
 
 ### Database Schema
 

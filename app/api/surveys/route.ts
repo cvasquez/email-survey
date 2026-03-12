@@ -58,6 +58,8 @@ export async function POST(request: Request) {
       .insert({
         title: body.title.trim(),
         require_name: body.require_name || false,
+        question: body.question?.trim() || null,
+        answer_options: body.answer_options?.filter((o: string) => o.trim()) || [],
         unique_link_id: uniqueLinkId,
         user_id: user.id,
         created_by_email: user.email,

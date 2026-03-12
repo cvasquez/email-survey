@@ -48,6 +48,8 @@ export default function ResponsesPage() {
   const [hideBots, setHideBots] = useState(true)
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState('')
+  const [copiedLinks, setCopiedLinks] = useState(false)
+  const [showLinks, setShowLinks] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -369,6 +371,92 @@ export default function ResponsesPage() {
             </button>
           </div>
         </div>
+
+        {/* Survey Links */}
+        {survey?.answer_options && survey.answer_options.length > 0 && (
+          <div className="bg-[#141414] border border-[#262626] rounded-lg mb-6">
+            <button
+              onClick={() => setShowLinks(!showLinks)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-[#1A1A1A] transition rounded-lg"
+            >
+              <h3 className="text-sm font-semibold text-[#EDEDED]">Survey Links</h3>
+              <svg
+                className={`w-4 h-4 text-[#A1A1A1] transition-transform ${showLinks ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showLinks && <div className="px-6 pb-6">
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => {
+                  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+                  const htmlLines = survey.answer_options.map((option: string) => {
+                    const encoded = encodeURIComponent(option)
+                    const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
+                    return `<a href="${url}">${option}</a>`
+                  })
+                  const plainLines = survey.answer_options.map((option: string) => {
+                    const encoded = encodeURIComponent(option)
+                    return `${option}: ${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
+                  })
+                  const blob = new Blob([htmlLines.join('<br>')], { type: 'text/html' })
+                  const textBlob = new Blob([plainLines.join('\n')], { type: 'text/plain' })
+                  navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
+                  setCopiedLinks(true)
+                  setTimeout(() => setCopiedLinks(false), 2000)
+                }}
+                className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition"
+              >
+                {copiedLinks ? 'Copied!' : 'Copy All Links'}
+              </button>
+            </div>
+            <div className="space-y-2">
+              {survey.answer_options.map((option: string, index: number) => {
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+                const encoded = encodeURIComponent(option)
+                const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
+                return (
+                  <div key={index} className="flex items-center gap-2 group">
+                    <code className="flex-1 text-sm text-[#A1A1A1] bg-[#0A0A0A] border border-[#262626] rounded px-3 py-2 overflow-x-auto">
+                      <span className="text-[#EDEDED]">{option}</span>
+                      <span className="text-[#666666]">: </span>
+                      {url}
+                    </code>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([`<a href="${url}">${option}</a>`], { type: 'text/html' })
+                        const textBlob = new Blob([url], { type: 'text/plain' })
+                        navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
+                        setCopiedLinks(true)
+                        setTimeout(() => setCopiedLinks(false), 2000)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#A1A1A1] hover:text-[#EDEDED] transition"
+                      title="Copy as hyperlink"
+                    >
+                      Link
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(url)
+                        setCopiedLinks(true)
+                        setTimeout(() => setCopiedLinks(false), 2000)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#A1A1A1] hover:text-[#EDEDED] transition"
+                      title="Copy URL only"
+                    >
+                      URL
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

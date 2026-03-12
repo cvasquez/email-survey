@@ -14,7 +14,7 @@ export async function GET(
     // Fetch survey by unique_link_id (used in URLs) — only return fields needed by the public form
     const { data: survey, error } = await supabase
       .from('surveys')
-      .select('id, title, is_active, require_name')
+      .select('id, title, is_active, require_name, question, answer_options')
       .eq('unique_link_id', id)
       .single()
 
@@ -36,17 +36,31 @@ export async function PATCH(
     const { id } = await params
     await ensureOrg()
     const supabase = await createClient()
-    const { title } = await request.json()
+    const body = await request.json()
+    const updates: Record<string, any> = {}
 
-    if (!title || typeof title !== 'string' || !title.trim()) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    if (body.title !== undefined) {
+      if (typeof body.title !== 'string' || !body.title.trim()) {
+        return NextResponse.json({ error: 'Title cannot be empty' }, { status: 400 })
+      }
+      updates.title = body.title.trim()
+    }
+    if (body.question !== undefined) {
+      updates.question = body.question?.trim() || null
+    }
+    if (body.answer_options !== undefined) {
+      updates.answer_options = body.answer_options.filter((o: string) => o.trim())
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
     }
 
     const { data: survey, error } = await supabase
       .from('surveys')
-      .update({ title: title.trim() })
+      .update(updates)
       .eq('id', id)
-      .select('id, title')
+      .select('id, title, question, answer_options')
       .single()
 
     if (error || !survey) {

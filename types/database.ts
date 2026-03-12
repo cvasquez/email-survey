@@ -34,6 +34,8 @@ export type Survey = {
   unique_link_id: string
   is_active: boolean
   created_by_email: string | null
+  question: string | null
+  answer_options: string[]
 }
 
 export type Response = {
@@ -53,6 +55,8 @@ export type Response = {
 export type CreateSurveyInput = {
   title: string
   require_name: boolean
+  question?: string
+  answer_options?: string[]
 }
 
 export type CreateResponseInput = {

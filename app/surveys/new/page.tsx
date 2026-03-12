@@ -6,6 +6,8 @@ import { Nav } from '@/app/components/nav'
 
 export default function NewSurveyPage() {
   const [title, setTitle] = useState('')
+  const [question, setQuestion] = useState('')
+  const [answerOptions, setAnswerOptions] = useState<string[]>(['', ''])
   const [requireName, setRequireName] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -24,6 +26,8 @@ export default function NewSurveyPage() {
         },
         body: JSON.stringify({
           title: title.trim(),
+          question: question.trim() || undefined,
+          answer_options: answerOptions.filter((o) => o.trim()),
           require_name: requireName,
         }),
       })
@@ -73,6 +77,65 @@ export default function NewSurveyPage() {
               />
               <p className="mt-1 text-sm text-[#666666]">
                 Give your survey a descriptive title for your own reference
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="question" className="block text-sm font-medium text-[#A1A1A1] mb-2">
+                Question Text <span className="font-normal text-[#666666]">(optional)</span>
+              </label>
+              <input
+                id="question"
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="e.g., How satisfied are you with our service?"
+                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+              />
+              <p className="mt-1 text-sm text-[#666666]">
+                Shown to respondents on the survey page
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#A1A1A1] mb-2">
+                Answer Options
+              </label>
+              <div className="space-y-2">
+                {answerOptions.map((option, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={option}
+                      onChange={(e) => {
+                        const updated = [...answerOptions]
+                        updated[index] = e.target.value
+                        setAnswerOptions(updated)
+                      }}
+                      placeholder={`Option ${index + 1}`}
+                      className="flex-1 px-3 py-2 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                    />
+                    {answerOptions.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setAnswerOptions(answerOptions.filter((_, i) => i !== index))}
+                        className="text-[#666666] hover:text-[#EF4444] transition-colors px-2 py-2"
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setAnswerOptions([...answerOptions, ''])}
+                className="mt-2 text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+              >
+                + Add Option
+              </button>
+              <p className="mt-1 text-sm text-[#666666]">
+                These will be used to generate survey links
               </p>
             </div>
 

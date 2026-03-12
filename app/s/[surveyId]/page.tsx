@@ -195,7 +195,7 @@ function SurveyResponseForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-lg font-semibold text-gray-900 mb-3">
-                Tell me about your answer: {displayAnswer}
+                {survey.question || `Tell me about your answer: ${displayAnswer}`}
               </label>
               <textarea
                 value={freeResponse}
