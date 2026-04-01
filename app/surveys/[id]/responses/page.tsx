@@ -279,7 +279,10 @@ export default function ResponsesPage() {
 
   const downloadPng = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
+    const buttons = ref.current.querySelectorAll<HTMLElement>('[data-html2canvas-ignore]')
+    buttons.forEach(btn => btn.style.visibility = 'hidden')
     const canvas = await html2canvas(ref.current, { backgroundColor: '#141414', scale: 2 })
+    buttons.forEach(btn => btn.style.visibility = '')
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
     link.href = url
@@ -493,6 +496,7 @@ export default function ResponsesPage() {
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-medium text-[#A1A1A1]">Answer Distribution</p>
                 <button
+                  data-html2canvas-ignore
                   onClick={() => downloadPng(chartRef, `${survey?.title || 'chart'}-distribution.png`)}
                   className="text-xs text-[#666666] hover:text-[#A1A1A1]"
                 >
@@ -506,6 +510,7 @@ export default function ResponsesPage() {
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-medium text-[#A1A1A1]">Response Locations</p>
                   <button
+                    data-html2canvas-ignore
                     onClick={() => downloadPng(mapRef, `${survey?.title || 'map'}-locations.png`)}
                     className="text-xs text-[#666666] hover:text-[#A1A1A1]"
                   >
