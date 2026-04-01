@@ -34,7 +34,7 @@ export function AnswerDistributionChart({ answerCounts, totalResponses }: Props)
     <ResponsiveContainer width="100%" height={Math.max(180, answerCounts.length * 50)}>
       <BarChart data={data} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#262626" />
-        <XAxis type="number" fontSize={12} tickLine={false} stroke="#666666" tick={{ fill: '#A1A1A1' }} />
+        <XAxis type="number" hide />
         <YAxis type="category" dataKey="name" width={120} fontSize={12} tickLine={false} stroke="#666666" tick={{ fill: '#A1A1A1' }} />
         <Tooltip content={<CustomTooltip />} />
         <Legend fontSize={12} wrapperStyle={{ color: '#A1A1A1' }} />
