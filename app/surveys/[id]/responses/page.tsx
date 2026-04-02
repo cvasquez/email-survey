@@ -470,6 +470,15 @@ export default function ResponsesPage() {
               <p className="text-xs text-[#666666] mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
             )}
           </div>
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <p className="text-sm text-[#A1A1A1]">Total Comments</p>
+            <p className="text-2xl font-semibold text-[#EDEDED]">
+              {totalComments}
+              <span className="text-sm font-normal text-[#666666] ml-1">
+                ({activeResponses.length > 0 ? Math.round((totalComments / activeResponses.length) * 100) : 0}%)
+              </span>
+            </p>
+          </div>
           {answerCounts.map(([value, { total, withComments }]) => (
             <div key={value} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
               <p className="text-sm text-[#A1A1A1] truncate">{value}</p>
