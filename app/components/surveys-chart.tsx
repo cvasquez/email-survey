@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 type SurveyChartData = {
   title: string
@@ -25,7 +25,7 @@ export function SurveysChart({ surveys }: { surveys: SurveyChartData[] }) {
   if (surveys.length === 0) return null
 
   const data = surveys.map((s) => ({
-    name: s.title.length > 25 ? s.title.slice(0, 25) + '…' : s.title,
+    name: s.title.length > 20 ? s.title.slice(0, 20) + '…' : s.title,
     response_count: s.response_count,
     comment_count: s.comment_count,
   }))
@@ -35,23 +35,38 @@ export function SurveysChart({ surveys }: { surveys: SurveyChartData[] }) {
       <h3 className="text-sm font-medium text-[#A1A1A1] uppercase tracking-wider mb-4">
         Answers &amp; Comments by Survey
       </h3>
-      <ResponsiveContainer width="100%" height={Math.max(200, surveys.length * 50)}>
-        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#262626" />
-          <XAxis type="number" tick={{ fill: '#666666', fontSize: 12 }} tickLine={false} axisLine={false} />
-          <YAxis
-            type="category"
+      <ResponsiveContainer width="100%" height={180}>
+        <LineChart data={data} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
+          <CartesianGrid vertical={false} stroke="#262626" strokeDasharray="3 3" />
+          <XAxis
             dataKey="name"
-            width={160}
-            fontSize={12}
+            tick={{ fill: '#A1A1A1', fontSize: 12 }}
             tickLine={false}
-            stroke="#262626"
-            tick={{ fill: '#A1A1A1' }}
+            axisLine={false}
+            interval={0}
+            angle={surveys.length > 5 ? -30 : 0}
+            textAnchor={surveys.length > 5 ? 'end' : 'middle'}
+            height={surveys.length > 5 ? 60 : 30}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-          <Bar dataKey="response_count" fill="#3B82F6" name="Answers" radius={[0, 4, 4, 0]} barSize={18} />
-          <Bar dataKey="comment_count" fill="#22C55E" name="Comments" radius={[0, 4, 4, 0]} barSize={18} />
-        </BarChart>
+          <YAxis tick={{ fill: '#666666', fontSize: 12 }} tickLine={false} axisLine={false} width={40} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#333333' }} />
+          <Line
+            type="monotone"
+            dataKey="response_count"
+            stroke="#3B82F6"
+            strokeWidth={2}
+            dot={{ r: 4, fill: '#3B82F6', strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: '#3B82F6', strokeWidth: 0 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="comment_count"
+            stroke="#22C55E"
+            strokeWidth={2}
+            dot={{ r: 4, fill: '#22C55E', strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: '#22C55E', strokeWidth: 0 }}
+          />
+        </LineChart>
       </ResponsiveContainer>
       <div className="flex items-center gap-6 mt-3 text-xs text-[#A1A1A1]">
         <div className="flex items-center gap-1.5">
