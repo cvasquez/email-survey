@@ -24,7 +24,7 @@ function CustomTooltip({ active, payload, label }: any) {
 export function SurveysChart({ surveys }: { surveys: SurveyChartData[] }) {
   if (surveys.length === 0) return null
 
-  const data = surveys.map((s) => ({
+  const data = [...surveys].reverse().map((s) => ({
     name: s.title.length > 20 ? s.title.slice(0, 20) + '…' : s.title,
     response_count: s.response_count,
     comment_count: s.comment_count,
