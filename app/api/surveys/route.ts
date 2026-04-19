@@ -11,21 +11,33 @@ export async function GET() {
     const { orgId } = await ensureOrg()
     const supabase = await createClient()
 
-    const { data: surveys, error } = await supabase
-      .from('surveys')
-      .select('*, responses(count)')
-      .eq('organization_id', orgId)
-      .eq('responses.is_suspected_bot', false)
-      .order('created_at', { ascending: false })
+    const [surveysResult, commentsResult] = await Promise.all([
+      supabase
+        .from('surveys')
+        .select('*, responses(count)')
+        .eq('organization_id', orgId)
+        .eq('responses.is_suspected_bot', false)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('surveys')
+        .select('id, responses(count)')
+        .eq('organization_id', orgId)
+        .eq('responses.is_suspected_bot', false)
+        .neq('responses.free_response', ''),
+    ])
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (surveysResult.error) {
+      return NextResponse.json({ error: surveysResult.error.message }, { status: 500 })
     }
 
-    // Flatten the response count
-    const surveysWithCounts = (surveys || []).map((s: any) => ({
+    const commentCountMap = new Map(
+      (commentsResult.data || []).map((s: any) => [s.id, s.responses?.[0]?.count ?? 0])
+    )
+
+    const surveysWithCounts = (surveysResult.data || []).map((s: any) => ({
       ...s,
       response_count: s.responses?.[0]?.count ?? 0,
+      comment_count: commentCountMap.get(s.id) ?? 0,
       responses: undefined,
     }))
 

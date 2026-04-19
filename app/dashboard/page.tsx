@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import type { Survey } from '@/types/database'
 import { Nav } from '@/app/components/nav'
+import { SurveysChart } from '@/app/components/surveys-chart'
 
 export default function DashboardPage() {
-  const [surveys, setSurveys] = useState<(Survey & { response_count: number })[]>([])
+  const [surveys, setSurveys] = useState<(Survey & { response_count: number; comment_count: number })[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -77,6 +78,10 @@ export default function DashboardPage() {
             + New Survey
           </a>
         </div>
+
+        {!loading && !error && surveys.length > 0 && (
+          <SurveysChart surveys={surveys} />
+        )}
 
         {loading && (
           <div className="text-center py-12">
