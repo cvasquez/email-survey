@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Nav } from '@/app/components/nav'
+import { AppShell } from '@/app/components/app-shell'
 
 export default function NewSurveyPage() {
   const [title, setTitle] = useState('')
@@ -21,9 +21,7 @@ export default function NewSurveyPage() {
     try {
       const response = await fetch('/api/surveys', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
           question: question.trim() || undefined,
@@ -31,13 +29,8 @@ export default function NewSurveyPage() {
           require_name: requireName,
         }),
       })
-
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create survey')
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Failed to create survey')
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
@@ -48,135 +41,118 @@ export default function NewSurveyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fff5ec]">
-      <Nav />
-
-      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
-          <h2 className="text-xl font-semibold text-[#2a1a10] mb-6">Create New Survey</h2>
-
-          {error && (
-            <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-[#6b4f3f] mb-2">
-                Survey Title
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                placeholder="e.g., Product Feedback Survey"
-                className="w-full px-3 py-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-              />
-              <p className="mt-1 text-sm text-[#a68b7a]">
-                Give your survey a descriptive title for your own reference
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="question" className="block text-sm font-medium text-[#6b4f3f] mb-2">
-                Question Text <span className="font-normal text-[#a68b7a]">(optional)</span>
-              </label>
-              <input
-                id="question"
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="e.g., How satisfied are you with our service?"
-                className="w-full px-3 py-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-              />
-              <p className="mt-1 text-sm text-[#a68b7a]">
-                Shown to respondents on the survey page
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#6b4f3f] mb-2">
-                Answer Options
-              </label>
-              <div className="space-y-2">
-                {answerOptions.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={option}
-                      onChange={(e) => {
-                        const updated = [...answerOptions]
-                        updated[index] = e.target.value
-                        setAnswerOptions(updated)
-                      }}
-                      placeholder={`Option ${index + 1}`}
-                      className="flex-1 px-3 py-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-                    />
-                    {answerOptions.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => setAnswerOptions(answerOptions.filter((_, i) => i !== index))}
-                        className="text-[#a68b7a] hover:text-[#EF4444] transition-colors px-2 py-2"
-                      >
-                        &times;
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setAnswerOptions([...answerOptions, ''])}
-                className="mt-2 text-sm text-[#e66b67] hover:text-[#c95551] transition-colors"
-              >
-                + Add Option
-              </button>
-              <p className="mt-1 text-sm text-[#a68b7a]">
-                These will be used to generate survey links
-              </p>
-            </div>
-
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="requireName"
-                  type="checkbox"
-                  checked={requireName}
-                  onChange={(e) => setRequireName(e.target.checked)}
-                  className="h-4 w-4 rounded border-[#d6c8b6] bg-[#fdf6ee] text-[#e66b67] focus:ring-[#e66b67] focus:ring-offset-0"
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor="requireName" className="font-medium text-[#2a1a10]">
-                  Require respondent name
-                </label>
-                <p className="text-sm text-[#a68b7a]">
-                  When enabled, respondents must provide their name along with their response
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 flex items-center space-x-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-[#e66b67] text-white font-medium text-sm rounded-md hover:bg-[#c95551] focus:ring-2 focus:ring-[#e66b67] focus:ring-offset-2 focus:ring-offset-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? 'Creating...' : 'Create Survey'}
-              </button>
-              <a
-                href="/dashboard"
-                className="inline-block px-6 py-2 text-sm text-[#6b4f3f] border border-[#d6c8b6] rounded-md hover:text-[#2a1a10] hover:border-[#444] transition-colors"
-              >
-                Cancel
-              </a>
-            </div>
-          </form>
+    <AppShell active="surveys">
+      <header className="wmd-pagehead">
+        <div>
+          <div className="wmd-crumbs">
+            <a href="/dashboard">Surveys</a>
+            <span className="wmd-crumb-sep">/</span>
+            <span style={{ color: 'var(--ink-2)', textTransform: 'none', letterSpacing: 0, fontSize: 13 }}>New</span>
+          </div>
+          <h1 className="wmd-pageh">Start a new survey.</h1>
+          <p className="wmd-pagedeck">Name it, list the answers, drop the links into your next email. That&apos;s the whole job.</p>
         </div>
-      </div>
-    </div>
+      </header>
+
+      <section className="wmd-card" style={{ maxWidth: 640 }}>
+        <div className="wmd-card-head">
+          <h2 className="wmd-card-h">Survey details</h2>
+        </div>
+        <form onSubmit={handleSubmit} className="wmd-form">
+          {error && <div className="wmd-form-error">{error}</div>}
+
+          <div className="wmd-form-row">
+            <label className="wmd-form-label" htmlFor="title">Survey title</label>
+            <input
+              id="title"
+              type="text"
+              className="wmd-form-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="e.g., Saturday Memo · Issue #47"
+            />
+            <span className="wmd-form-hint">For your reference. Recipients won&apos;t see this.</span>
+          </div>
+
+          <div className="wmd-form-row">
+            <label className="wmd-form-label" htmlFor="question">
+              Question text <span style={{ fontWeight: 500, color: 'var(--ink-3)' }}>· optional</span>
+            </label>
+            <input
+              id="question"
+              type="text"
+              className="wmd-form-input"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="e.g., How did this issue land?"
+            />
+            <span className="wmd-form-hint">Shown to respondents on the follow-up page.</span>
+          </div>
+
+          <div className="wmd-form-row">
+            <label className="wmd-form-label">Answer options</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {answerOptions.map((option, index) => (
+                <div key={index} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    className="wmd-form-input"
+                    value={option}
+                    onChange={(e) => {
+                      const updated = [...answerOptions]
+                      updated[index] = e.target.value
+                      setAnswerOptions(updated)
+                    }}
+                    placeholder={`Option ${index + 1}`}
+                  />
+                  {answerOptions.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => setAnswerOptions(answerOptions.filter((_, i) => i !== index))}
+                      className="wmd-row-menu danger"
+                      aria-label="Remove option"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setAnswerOptions([...answerOptions, ''])}
+              style={{ alignSelf: 'flex-start', marginTop: 4, fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}
+            >
+              + Add option
+            </button>
+            <span className="wmd-form-hint">Each option becomes its own click-tracked URL.</span>
+          </div>
+
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', padding: '4px 0' }}>
+            <input
+              type="checkbox"
+              checked={requireName}
+              onChange={(e) => setRequireName(e.target.checked)}
+              style={{ accentColor: 'var(--accent)', marginTop: 4, width: 16, height: 16 }}
+            />
+            <span>
+              <span className="wmd-form-label">Require respondent name</span>
+              <span className="wmd-form-hint" style={{ display: 'block', marginTop: 2 }}>
+                Show a required name field on the follow-up page.
+              </span>
+            </span>
+          </label>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+            <button type="submit" disabled={loading} className="wmd-btn-primary">
+              {loading ? 'Creating…' : 'Create survey'}
+            </button>
+            <a href="/dashboard" className="wmd-btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </AppShell>
   )
 }

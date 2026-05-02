@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Nav } from '@/app/components/nav'
+import { AppShell } from '@/app/components/app-shell'
 
 export default function AccountSettingsPage() {
   const supabase = createClient()
@@ -29,11 +29,10 @@ export default function AccountSettingsPage() {
 
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword })
-
       if (error) {
         setMessage({ type: 'error', text: error.message })
       } else {
-        setMessage({ type: 'success', text: 'Password updated successfully.' })
+        setMessage({ type: 'success', text: 'Password updated.' })
         setNewPassword('')
         setConfirmPassword('')
       }
@@ -45,70 +44,67 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fff5ec]">
-      <Nav />
-
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-semibold mb-6 text-[#2a1a10]">Account Settings</h2>
-
-        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-[#2a1a10]">Update Password</h3>
-
-          <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-md">
-            <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
-                New Password
-              </label>
-              <input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
-                Confirm Password
-              </label>
-              <input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-
-            {message && (
-              <div
-                className={`p-3 rounded-md text-sm ${
-                  message.type === 'success'
-                    ? 'bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E]'
-                    : 'bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444]'
-                }`}
-              >
-                {message.text}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] disabled:opacity-50 transition-colors"
-            >
-              {saving ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
+    <AppShell active="account">
+      <header className="wmd-pagehead">
+        <div>
+          <div className="wmd-crumbs">Account</div>
+          <h1 className="wmd-pageh">Account settings.</h1>
+          <p className="wmd-pagedeck">Update your password and manage how you sign in.</p>
         </div>
-      </div>
-    </div>
+      </header>
+
+      <section className="wmd-card" style={{ maxWidth: 560 }}>
+        <div className="wmd-card-head">
+          <h2 className="wmd-card-h">Update password</h2>
+          <span className="wmd-card-meta">Use 6+ characters. We&apos;ll sign you out of other devices after.</span>
+        </div>
+        <form onSubmit={handleUpdatePassword} className="wmd-form">
+          <div className="wmd-form-row">
+            <label className="wmd-form-label" htmlFor="new-password">New password</label>
+            <input
+              id="new-password"
+              type="password"
+              className="wmd-form-input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div className="wmd-form-row">
+            <label className="wmd-form-label" htmlFor="confirm-password">Confirm password</label>
+            <input
+              id="confirm-password"
+              type="password"
+              className="wmd-form-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          </div>
+
+          {message && (
+            <div
+              className="wmd-form-error"
+              style={
+                message.type === 'success'
+                  ? { background: 'rgba(47,122,61,0.08)', borderColor: 'rgba(47,122,61,0.2)', color: '#1f5e2e' }
+                  : undefined
+              }
+            >
+              {message.text}
+            </div>
+          )}
+
+          <button type="submit" disabled={saving} className="wmd-btn-primary" style={{ alignSelf: 'flex-start' }}>
+            {saving ? 'Updating…' : 'Update password'}
+          </button>
+        </form>
+      </section>
+    </AppShell>
   )
 }

@@ -1,33 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Nav } from '@/app/components/nav'
+import { AppShell } from '@/app/components/app-shell'
 import { formatDate } from '@/lib/utils'
 
-type Member = {
-  id: string
-  user_id: string
-  email: string
-  role: string
-  created_at: string
-}
-
-type Invite = {
-  id: string
-  email: string
-  role: string
-  created_at: string
-}
-
-type OrgInfo = {
-  id: string
-  name: string
-  role: string
-}
+type Member = { id: string; user_id: string; email: string; role: string; created_at: string }
+type Invite = { id: string; email: string; role: string; created_at: string }
+type OrgInfo = { id: string; name: string; role: string }
 
 export default function TeamSettingsPage() {
-  const router = useRouter()
   const [org, setOrg] = useState<OrgInfo | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invite[]>([])
@@ -49,27 +30,19 @@ export default function TeamSettingsPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch org info
       const orgsRes = await fetch('/api/organizations')
       const orgsData = await orgsRes.json()
-
       if (!orgsRes.ok) throw new Error(orgsData.error)
 
-      const currentOrg = orgsData.organizations?.find(
-        (o: OrgInfo) => o.id === orgsData.currentOrgId
-      )
+      const currentOrg = orgsData.organizations?.find((o: OrgInfo) => o.id === orgsData.currentOrgId)
       if (currentOrg) {
         setOrg(currentOrg)
         setOrgName(currentOrg.name)
       }
 
-      // Fetch members
       if (orgsData.currentOrgId) {
-        const membersRes = await fetch(
-          `/api/organizations/${orgsData.currentOrgId}/members`
-        )
+        const membersRes = await fetch(`/api/organizations/${orgsData.currentOrgId}/members`)
         const membersData = await membersRes.json()
-
         if (membersRes.ok) {
           setMembers(membersData.members || [])
           setInvites(membersData.invites || [])
@@ -96,15 +69,12 @@ export default function TeamSettingsPage() {
         body: JSON.stringify({ email: inviteEmail.trim() }),
       })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error)
 
       if (data.status === 'added') {
         setInviteMessage(`${data.email} has been added to the team.`)
       } else {
-        setInviteMessage(
-          `Invite sent to ${data.email}. They'll get access when they sign up.`
-        )
+        setInviteMessage(`Invite sent to ${data.email}. They'll get access when they sign up.`)
       }
       setInviteEmail('')
       fetchData()
@@ -118,17 +88,11 @@ export default function TeamSettingsPage() {
   const handleRemoveMember = async (userId: string, email: string) => {
     if (!org) return
     if (!confirm(`Remove ${email} from the team?`)) return
-
     setRemovingId(userId)
     try {
-      const res = await fetch(
-        `/api/organizations/${org.id}/members?userId=${userId}`,
-        { method: 'DELETE' }
-      )
+      const res = await fetch(`/api/organizations/${org.id}/members?userId=${userId}`, { method: 'DELETE' })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error)
-
       fetchData()
     } catch (err: any) {
       alert(err.message)
@@ -139,17 +103,11 @@ export default function TeamSettingsPage() {
 
   const handleRevokeInvite = async (inviteId: string) => {
     if (!org) return
-
     setRevokingId(inviteId)
     try {
-      const res = await fetch(
-        `/api/organizations/${org.id}/invites?id=${inviteId}`,
-        { method: 'DELETE' }
-      )
+      const res = await fetch(`/api/organizations/${org.id}/invites?id=${inviteId}`, { method: 'DELETE' })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error)
-
       fetchData()
     } catch (err: any) {
       alert(err.message)
@@ -160,7 +118,6 @@ export default function TeamSettingsPage() {
 
   const handleRenameOrg = async () => {
     if (!org || !orgName.trim()) return
-
     try {
       const res = await fetch(`/api/organizations/${org.id}`, {
         method: 'PATCH',
@@ -168,9 +125,7 @@ export default function TeamSettingsPage() {
         body: JSON.stringify({ name: orgName.trim() }),
       })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error)
-
       setOrg({ ...org, name: orgName.trim() })
       setEditingName(false)
     } catch (err: any) {
@@ -179,189 +134,166 @@ export default function TeamSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fff5ec]">
-      <Nav />
+    <AppShell active="team">
+      <header className="wmd-pagehead">
+        <div>
+          <div className="wmd-crumbs">Team</div>
+          <h1 className="wmd-pageh">Your team.</h1>
+          <p className="wmd-pagedeck">Bring people in. Surveys and responses are shared across the org.</p>
+        </div>
+      </header>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-semibold mb-6 text-[#2a1a10]">Team Settings</h2>
+      {loading && <div className="wmd-list-empty wmd-card">Loading…</div>}
+      {error && <div className="wmd-form-error">{error}</div>}
 
-        {loading && (
-          <div className="text-center py-12">
-            <p className="text-[#6b4f3f]">Loading...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-4 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {!loading && !error && org && (
-          <>
-            {/* Organization Name */}
-            <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
-              <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">Organization</h3>
+      {!loading && !error && org && (
+        <>
+          <section className="wmd-card" style={{ maxWidth: 720 }}>
+            <div className="wmd-card-head">
+              <h2 className="wmd-card-h">Organization</h2>
+            </div>
+            <div className="wmd-card-body">
               {editingName ? (
-                <div className="flex items-center gap-3">
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <input
-                    type="text"
+                    className="wmd-form-input"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    className="flex-1 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRenameOrg()
-                      if (e.key === 'Escape') {
-                        setOrgName(org.name)
-                        setEditingName(false)
-                      }
+                      if (e.key === 'Escape') { setOrgName(org.name); setEditingName(false) }
                     }}
                   />
-                  <button
-                    onClick={handleRenameOrg}
-                    className="px-3 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] transition-colors"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setOrgName(org.name)
-                      setEditingName(false)
-                    }}
-                    className="px-3 py-2 text-[#6b4f3f] text-sm hover:text-[#2a1a10] transition-colors"
-                  >
-                    Cancel
-                  </button>
+                  <button onClick={handleRenameOrg} className="wmd-btn-primary wmd-btn-sm">Save</button>
+                  <button onClick={() => { setOrgName(org.name); setEditingName(false) }} className="wmd-btn-ghost wmd-btn-sm">Cancel</button>
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-[#2a1a10]">{org.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{org.name}</span>
+                  <span style={{ fontSize: 12, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+                    {org.role}
+                  </span>
                   {isOwner && (
-                    <button
-                      onClick={() => setEditingName(true)}
-                      className="text-sm text-[#e66b67] hover:text-[#c95551] transition-colors"
-                    >
+                    <button onClick={() => setEditingName(true)} className="wmd-btn-ghost wmd-btn-sm" style={{ marginLeft: 'auto' }}>
                       Rename
                     </button>
                   )}
                 </div>
               )}
             </div>
+          </section>
 
-            {/* Members */}
-            <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
-              <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">
-                Members ({members.length})
-              </h3>
-              <div className="divide-y divide-[#e8dfd2]">
-                {members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between py-3"
-                  >
+          <section className="wmd-card" style={{ maxWidth: 720 }}>
+            <div className="wmd-card-head">
+              <h2 className="wmd-card-h">Members</h2>
+              <span className="wmd-card-meta">{members.length} member{members.length === 1 ? '' : 's'}</span>
+            </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {members.map((member) => (
+                <li
+                  key={member.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '14px 22px', borderBottom: '1px solid var(--line-2)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{
+                      width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', color: '#fff',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14,
+                    }}>
+                      {member.email.slice(0, 1).toUpperCase()}
+                    </span>
                     <div>
-                      <span className="text-sm text-[#2a1a10]">
-                        {member.email}
-                      </span>
-                      <span className="ml-2 text-xs text-[#a68b7a] capitalize">
-                        {member.role}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="text-[#a68b7a]">
-                        {formatDate(member.created_at)}
-                      </span>
-                      {isOwner && members.length > 1 && (
-                        <button
-                          onClick={() =>
-                            handleRemoveMember(member.user_id, member.email)
-                          }
-                          disabled={removingId === member.user_id}
-                          className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50 transition-colors"
-                        >
-                          {removingId === member.user_id
-                            ? 'Removing...'
-                            : 'Remove'}
-                        </button>
-                      )}
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{member.email}</div>
+                      <div style={{ fontSize: 12, color: 'var(--ink-3)', textTransform: 'capitalize', marginTop: 2 }}>
+                        {member.role} · joined {formatDate(member.created_at)}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pending Invites */}
-            {invites.length > 0 && (
-              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
-                <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">
-                  Pending Invites ({invites.length})
-                </h3>
-                <div className="divide-y divide-[#e8dfd2]">
-                  {invites.map((invite) => (
-                    <div
-                      key={invite.id}
-                      className="flex items-center justify-between py-3"
+                  {isOwner && members.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveMember(member.user_id, member.email)}
+                      disabled={removingId === member.user_id}
+                      className="wmd-btn-ghost wmd-btn-sm wmd-btn-warn"
                     >
-                      <div>
-                        <span className="text-sm text-[#2a1a10]">
-                          {invite.email}
-                        </span>
-                        <span className="ml-2 text-xs text-[#EAB308] bg-[#EAB308]/10 px-2 py-0.5 rounded-full">
-                          Pending
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="text-[#a68b7a]">
-                          {formatDate(invite.created_at)}
-                        </span>
-                        {isOwner && (
-                          <button
-                            onClick={() => handleRevokeInvite(invite.id)}
-                            disabled={revokingId === invite.id}
-                            className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50 transition-colors"
-                          >
-                            {revokingId === invite.id
-                              ? 'Revoking...'
-                              : 'Revoke'}
-                          </button>
-                        )}
+                      {removingId === member.user_id ? 'Removing…' : 'Remove'}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {invites.length > 0 && (
+            <section className="wmd-card" style={{ maxWidth: 720 }}>
+              <div className="wmd-card-head">
+                <h2 className="wmd-card-h">Pending invites</h2>
+                <span className="wmd-card-meta">{invites.length} pending</span>
+              </div>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {invites.map((invite) => (
+                  <li
+                    key={invite.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '14px 22px', borderBottom: '1px solid var(--line-2)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{invite.email}</div>
+                      <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 2 }}>
+                        Sent {formatDate(invite.created_at)}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    {isOwner && (
+                      <button
+                        onClick={() => handleRevokeInvite(invite.id)}
+                        disabled={revokingId === invite.id}
+                        className="wmd-btn-ghost wmd-btn-sm wmd-btn-warn"
+                      >
+                        {revokingId === invite.id ? 'Revoking…' : 'Revoke'}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-            {/* Invite Form */}
-            {isOwner && (
-              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
-                <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">Invite Member</h3>
-                <form onSubmit={handleInvite} className="flex items-center gap-3">
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="flex-1 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={inviting}
-                    className="px-4 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] disabled:opacity-50 transition-colors"
-                  >
-                    {inviting ? 'Inviting...' : 'Invite'}
-                  </button>
-                </form>
-                {inviteMessage && (
-                  <p className="mt-3 text-sm text-[#6b4f3f]">{inviteMessage}</p>
-                )}
+          {isOwner && (
+            <section className="wmd-card" style={{ maxWidth: 720 }}>
+              <div className="wmd-card-head">
+                <h2 className="wmd-card-h">Invite a teammate</h2>
+                <span className="wmd-card-meta">They&apos;ll get access on their next sign-in.</span>
               </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+              <form onSubmit={handleInvite} className="wmd-form" style={{ paddingBottom: 16 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                  <div className="wmd-form-row" style={{ flex: 1 }}>
+                    <label className="wmd-form-label" htmlFor="invite-email">Email</label>
+                    <input
+                      id="invite-email"
+                      type="email"
+                      className="wmd-form-input"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      required
+                    />
+                  </div>
+                  <button type="submit" disabled={inviting} className="wmd-btn-primary">
+                    {inviting ? 'Sending…' : 'Send invite'}
+                  </button>
+                </div>
+                {inviteMessage && (
+                  <p style={{ fontSize: 13, color: 'var(--ink-2)' }}>{inviteMessage}</p>
+                )}
+              </form>
+            </section>
+          )}
+        </>
+      )}
+    </AppShell>
   )
 }
