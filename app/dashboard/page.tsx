@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatDate } from '@/lib/utils'
 import type { Survey } from '@/types/database'
 import { AppShell } from '@/app/components/app-shell'
@@ -228,44 +229,100 @@ export default function DashboardPage() {
 }
 
 function ResponsesPerSurveyCard({ surveys }: { surveys: SurveyRow[] }) {
-  const top = useMemo(() => {
-    return [...surveys].sort((a, b) => b.response_count - a.response_count).slice(0, 8)
+  const data = useMemo(() => {
+    return [...surveys]
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map((s) => ({
+        name: s.title.length > 22 ? s.title.slice(0, 22) + '…' : s.title,
+        created: formatDate(s.created_at),
+        responses: s.response_count,
+        comments: s.comment_count,
+      }))
   }, [surveys])
-  const max = Math.max(1, ...top.map((s) => s.response_count))
 
   return (
     <section className="wmd-card">
       <div className="wmd-card-head">
         <div>
-          <h2 className="wmd-card-h">Responses across all surveys</h2>
-          <div className="wmd-card-meta">Top {top.length} by total responses</div>
+          <h2 className="wmd-card-h">Responses &amp; comments by survey</h2>
+          <div className="wmd-card-meta">Ordered by creation date · {data.length} survey{data.length === 1 ? '' : 's'}</div>
+        </div>
+        <div className="wmd-hbar-legend" style={{ marginTop: 0 }}>
+          <span><span className="wmd-leg" style={{ background: '#e66b67' }} /> Responses</span>
+          <span><span className="wmd-leg" style={{ background: '#2a1a10' }} /> Comments</span>
         </div>
       </div>
-      <div className="wmd-hbars">
-        {top.map((s) => {
-          const pct = (s.response_count / max) * 100
-          const commentPct = s.response_count > 0 ? s.comment_count / s.response_count : 0
-          return (
-            <div className="wmd-hbar" key={s.id}>
-              <div className="wmd-hbar-head">
-                <span className="wmd-hbar-label" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{s.title}</span>
-                <span className="wmd-hbar-vals">
-                  <span className="wmd-hbar-count">{s.response_count.toLocaleString()}</span>
-                  <span className="wmd-hbar-pct">{s.comment_count} comm.</span>
-                </span>
-              </div>
-              <div className="wmd-hbar-shaft">
-                <div className="wmd-hbar-fill" style={{ width: pct + '%', background: '#e66b67' }} />
-                <div className="wmd-hbar-fill-comment" style={{ width: pct * commentPct + '%' }} title="With comment" />
-              </div>
-            </div>
-          )
-        })}
-        <div className="wmd-hbar-legend">
-          <span><span className="wmd-leg" style={{ background: '#e66b67' }} /> Total responses</span>
-          <span><span className="wmd-leg" style={{ background: 'repeating-linear-gradient(-45deg, rgba(42,26,16,0.4) 0 4px, transparent 4px 8px)' }} /> With written comment</span>
-        </div>
+      <div style={{ padding: '20px 18px 18px' }}>
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+            <CartesianGrid vertical={false} stroke="rgba(42,26,16,0.08)" strokeDasharray="3 4" />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: '#6b4f3f', fontSize: 12 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(42,26,16,0.1)' }}
+              interval={0}
+              angle={data.length > 5 ? -25 : 0}
+              textAnchor={data.length > 5 ? 'end' : 'middle'}
+              height={data.length > 5 ? 64 : 32}
+            />
+            <YAxis
+              tick={{ fill: '#a68b7a', fontSize: 11 }}
+              tickLine={false}
+              axisLine={false}
+              width={36}
+            />
+            <Tooltip content={<DashTooltip />} cursor={{ stroke: '#d6c8b6', strokeDasharray: '3 3' }} />
+            <Line
+              type="monotone"
+              dataKey="responses"
+              name="Responses"
+              stroke="#e66b67"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: '#e66b67', strokeWidth: 0 }}
+              activeDot={{ r: 6, fill: '#e66b67', strokeWidth: 2, stroke: '#fff' }}
+            />
+            <Line
+              type="monotone"
+              dataKey="comments"
+              name="Comments"
+              stroke="#2a1a10"
+              strokeWidth={2}
+              dot={{ r: 3.5, fill: '#2a1a10', strokeWidth: 0 }}
+              activeDot={{ r: 5.5, fill: '#2a1a10', strokeWidth: 2, stroke: '#fff' }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </section>
+  )
+}
+
+function DashTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  const responses = payload.find((p: any) => p.dataKey === 'responses')?.value ?? 0
+  const comments = payload.find((p: any) => p.dataKey === 'comments')?.value ?? 0
+  const created = payload[0]?.payload?.created
+  return (
+    <div style={{
+      background: '#fff',
+      border: '1px solid rgba(42,26,16,0.1)',
+      borderRadius: 12,
+      padding: '10px 14px',
+      fontSize: 13,
+      boxShadow: '0 18px 48px -16px rgba(42,26,16,0.18)',
+      minWidth: 180,
+    }}>
+      <div style={{ fontWeight: 700, color: '#2a1a10', marginBottom: 2 }}>{label}</div>
+      {created && <div style={{ fontSize: 11, color: '#a68b7a', marginBottom: 6 }}>{created}</div>}
+      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#e66b67', fontWeight: 600 }}>
+        <span>Responses</span>
+        <span>{Number(responses).toLocaleString()}</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2a1a10', fontWeight: 600 }}>
+        <span>Comments</span>
+        <span>{Number(comments).toLocaleString()}</span>
+      </div>
+    </div>
   )
 }

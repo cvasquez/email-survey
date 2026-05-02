@@ -150,7 +150,7 @@ const warmAppCSS = `
   min-height: 100vh;
 }
 .wmd-shell a { color: inherit; text-decoration: none; }
-.wmd-shell button { font-family: inherit; cursor: pointer; border: 0; background: transparent; }
+.wmd-shell button { font-family: inherit; cursor: pointer; border: 0; }
 
 /* Sidebar */
 .wmd-side {

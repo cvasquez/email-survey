@@ -47,6 +47,7 @@ export default function ResponsesPage() {
   const [hideBots, setHideBots] = useState(true)
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState('')
+  const [linksOpen, setLinksOpen] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -384,31 +385,59 @@ export default function ResponsesPage() {
 
       {survey.answer_options && survey.answer_options.length > 0 && (
         <section className="wmd-card">
-          <div className="wmd-card-head">
+          <button
+            type="button"
+            onClick={() => setLinksOpen((v) => !v)}
+            className="wmd-card-head"
+            aria-expanded={linksOpen}
+            style={{ width: '100%', textAlign: 'left', cursor: 'pointer', background: 'transparent' }}
+          >
             <div>
-              <h2 className="wmd-card-h">Survey links</h2>
+              <h2 className="wmd-card-h">Survey links <span style={{ fontWeight: 500, color: 'var(--ink-3)', fontSize: 13, marginLeft: 6 }}>· {survey.answer_options.length}</span></h2>
               <span className="wmd-card-meta">Drop these into your email. Each one carries a different answer.</span>
             </div>
-            <button className="wmd-card-link" onClick={copyAllAnswerLinks}>
-              {copiedKey === 'all-answers' ? 'Copied all!' : 'Copy all'}
-            </button>
-          </div>
-          <div className="wmd-links">
-            {survey.answer_options.map((option: string, i: number) => {
-              const baseUrl = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_APP_URL || window.location.origin) : ''
-              const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
-              const color = ANSWER_PALETTE[i % ANSWER_PALETTE.length]
-              return (
-                <div className="wmd-link" key={option}>
-                  <span className="wmd-link-pill" style={{ background: color, color: '#fff' }}>{option}</span>
-                  <code className="wmd-link-url">{url}</code>
-                  <button className="wmd-link-copy" onClick={() => copyAnswerLink(option)}>
-                    {copiedKey === 'answer-' + option ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 600 }}>{linksOpen ? 'Hide' : 'Show'}</span>
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: 'var(--ink-3)', transform: linksOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s ease' }}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </button>
+          {linksOpen && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 22px', marginTop: 4 }}>
+                <button className="wmd-card-link" onClick={copyAllAnswerLinks}>
+                  {copiedKey === 'all-answers' ? 'Copied all!' : 'Copy all'}
+                </button>
+              </div>
+              <div className="wmd-links">
+                {survey.answer_options.map((option: string, i: number) => {
+                  const baseUrl = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_APP_URL || window.location.origin) : ''
+                  const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
+                  const color = ANSWER_PALETTE[i % ANSWER_PALETTE.length]
+                  return (
+                    <div className="wmd-link" key={option}>
+                      <span className="wmd-link-pill" style={{ background: color, color: '#fff' }}>{option}</span>
+                      <code className="wmd-link-url">{url}</code>
+                      <button className="wmd-link-copy" onClick={() => copyAnswerLink(option)}>
+                        {copiedKey === 'answer-' + option ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </section>
       )}
 
