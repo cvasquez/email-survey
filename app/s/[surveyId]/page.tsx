@@ -202,7 +202,7 @@ function SurveyResponseForm() {
                 onChange={(e) => setFreeResponse(e.target.value)}
                 rows={6}
                 placeholder="Share your thoughts here... (optional)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent resize-y text-slate-900"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:border-transparent resize-y text-slate-900"
               />
               <p className="mt-2 text-sm text-gray-500">Your initial response has been recorded. You can optionally provide more details above.</p>
             </div>
@@ -218,7 +218,7 @@ function SurveyResponseForm() {
                   value={respondentName}
                   onChange={(e) => setRespondentName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-slate-900"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:border-transparent text-slate-900"
                 />
               </div>
             )}
@@ -226,7 +226,7 @@ function SurveyResponseForm() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 px-4 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
+              className="w-full py-3 px-4 bg-[#e66b67] text-white font-semibold rounded-lg hover:bg-[#c95551] focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition"
             >
               {submitting ? 'Submitting...' : 'Submit'}
             </button>

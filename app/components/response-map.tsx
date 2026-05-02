@@ -48,9 +48,9 @@ export function ResponseMap({ countries }: Props) {
 
   function getColor(geoName: string): string {
     const count = countryData.get(geoName) || 0
-    if (count === 0) return '#1A1A1A'
+    if (count === 0) return '#fdf6ee'
     const intensity = Math.max(0.3, count / maxCount)
-    return `rgba(37, 99, 235, ${intensity})`
+    return `rgba(230, 107, 103, ${intensity})`
   }
 
   function getCount(geoName: string): number {
@@ -75,7 +75,7 @@ export function ResponseMap({ countries }: Props) {
                   key={geo.rsmKey}
                   geography={geo}
                   fill={getColor(name)}
-                  stroke="#262626"
+                  stroke="#e8dfd2"
                   strokeWidth={0.5}
                   onMouseEnter={() => {
                     if (count > 0) {
@@ -86,7 +86,7 @@ export function ResponseMap({ countries }: Props) {
                   onMouseLeave={() => setTooltip(null)}
                   style={{
                     default: { outline: 'none' },
-                    hover: { fill: count > 0 ? '#2563eb' : '#262626', outline: 'none' },
+                    hover: { fill: count > 0 ? '#c95551' : '#e8dfd2', outline: 'none' },
                     pressed: { outline: 'none' },
                   }}
                 />
@@ -96,9 +96,9 @@ export function ResponseMap({ countries }: Props) {
         </Geographies>
       </ComposableMap>
       {tooltip && (
-        <div className="absolute top-2 right-2 bg-[#1A1A1A] border border-[#262626] rounded-lg shadow-sm px-3 py-2 text-sm pointer-events-none">
-          <p className="font-medium text-[#EDEDED]">{tooltip.name}</p>
-          <p className="text-[#A1A1A1]">{tooltip.count} {tooltip.count === 1 ? 'response' : 'responses'}</p>
+        <div className="absolute top-2 right-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-lg shadow-sm px-3 py-2 text-sm pointer-events-none">
+          <p className="font-medium text-[#2a1a10]">{tooltip.name}</p>
+          <p className="text-[#6b4f3f]">{tooltip.count} {tooltip.count === 1 ? 'response' : 'responses'}</p>
         </div>
       )}
     </div>

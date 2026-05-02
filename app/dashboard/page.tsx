@@ -65,15 +65,15 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#fff5ec]">
       <Nav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-[#EDEDED]">Surveys</h2>
+          <h2 className="text-2xl font-semibold text-[#2a1a10]">Surveys</h2>
           <a
             href="/surveys/new"
-            className="px-4 py-2 bg-[#3B82F6] text-white text-sm font-medium rounded-md hover:bg-[#2563EB] transition-colors"
+            className="px-4 py-2 bg-[#e66b67] text-white text-sm font-medium rounded-md hover:bg-[#c95551] transition-colors"
           >
             + New Survey
           </a>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
 
         {loading && (
           <div className="text-center py-12">
-            <p className="text-[#A1A1A1]">Loading surveys...</p>
+            <p className="text-[#6b4f3f]">Loading surveys...</p>
           </div>
         )}
 
@@ -96,11 +96,11 @@ export default function DashboardPage() {
         )}
 
         {!loading && !error && surveys.length === 0 && (
-          <div className="text-center py-12 bg-[#141414] border border-[#262626] rounded-lg">
-            <p className="text-[#A1A1A1] mb-4">No surveys yet. Create your first survey!</p>
+          <div className="text-center py-12 bg-[#ffffff] border border-[#e8dfd2] rounded-lg">
+            <p className="text-[#6b4f3f] mb-4">No surveys yet. Create your first survey!</p>
             <a
               href="/surveys/new"
-              className="inline-block px-4 py-2 bg-[#3B82F6] text-white text-sm font-medium rounded-md hover:bg-[#2563EB] transition-colors"
+              className="inline-block px-4 py-2 bg-[#e66b67] text-white text-sm font-medium rounded-md hover:bg-[#c95551] transition-colors"
             >
               + New Survey
             </a>
@@ -110,36 +110,36 @@ export default function DashboardPage() {
         {!loading && !error && surveys.length > 0 && (
           <div className="space-y-4 md:hidden">
             {surveys.map((survey) => (
-              <div key={survey.id} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+              <div key={survey.id} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <a href={`/surveys/${survey.id}/responses`} className="font-medium text-[#EDEDED] hover:text-white">{survey.title}</a>
-                    <div className="text-xs text-[#666666] mt-0.5">{survey.unique_link_id}</div>
+                    <a href={`/surveys/${survey.id}/responses`} className="font-medium text-[#2a1a10] hover:text-[#e66b67]">{survey.title}</a>
+                    <div className="text-xs text-[#a68b7a] mt-0.5">{survey.unique_link_id}</div>
                   </div>
                   {survey.is_active ? (
                     <span className="px-2 text-xs leading-5 font-medium rounded-full bg-[#22C55E]/10 text-[#22C55E]">
                       Active
                     </span>
                   ) : (
-                    <span className="px-2 text-xs leading-5 font-medium rounded-full bg-[#666666]/10 text-[#666666]">
+                    <span className="px-2 text-xs leading-5 font-medium rounded-full bg-[#a68b7a]/10 text-[#a68b7a]">
                       Inactive
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-[#A1A1A1] mb-3">
+                <div className="flex items-center gap-4 text-sm text-[#6b4f3f] mb-3">
                   <span>{survey.response_count} responses</span>
                   <span>{formatDate(survey.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm font-medium">
                   <button
                     onClick={() => copyLink(survey.unique_link_id)}
-                    className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                    className="text-[#e66b67] hover:text-[#c95551] transition-colors"
                   >
                     {copiedId === survey.unique_link_id ? 'Copied!' : 'Copy Link'}
                   </button>
                   <a
                     href={`/surveys/${survey.id}/responses`}
-                    className="text-[#A1A1A1] hover:text-white transition-colors"
+                    className="text-[#6b4f3f] hover:text-[#e66b67] transition-colors"
                   >
                     View
                   </a>
@@ -157,40 +157,40 @@ export default function DashboardPage() {
         )}
 
         {!loading && !error && surveys.length > 0 && (
-          <div className="hidden md:block bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+          <div className="hidden md:block bg-[#ffffff] border border-[#e8dfd2] rounded-lg overflow-hidden">
             <table className="min-w-full">
-              <thead className="border-b border-[#262626]">
+              <thead className="border-b border-[#e8dfd2]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                     Title
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                     Responses
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                     Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-[#666666] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {surveys.map((survey) => (
-                  <tr key={survey.id} className="border-b border-[#262626] last:border-b-0 hover:bg-[#1A1A1A] transition-colors">
+                  <tr key={survey.id} className="border-b border-[#e8dfd2] last:border-b-0 hover:bg-[#fdf6ee] transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <a href={`/surveys/${survey.id}/responses`} className="text-sm font-medium text-[#EDEDED] hover:text-white">{survey.title}</a>
-                      <div className="text-xs text-[#666666] mt-1">
+                      <a href={`/surveys/${survey.id}/responses`} className="text-sm font-medium text-[#2a1a10] hover:text-[#e66b67]">{survey.title}</a>
+                      <div className="text-xs text-[#a68b7a] mt-1">
                         Link ID: {survey.unique_link_id}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#EDEDED] font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2a1a10] font-medium">
                       {survey.response_count}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#A1A1A1]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#6b4f3f]">
                       {formatDate(survey.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                           Active
                         </span>
                       ) : (
-                        <span className="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-[#666666]/10 text-[#666666]">
+                        <span className="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-[#a68b7a]/10 text-[#a68b7a]">
                           Inactive
                         </span>
                       )}
@@ -207,13 +207,13 @@ export default function DashboardPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       <button
                         onClick={() => copyLink(survey.unique_link_id)}
-                        className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                        className="text-[#e66b67] hover:text-[#c95551] transition-colors"
                       >
                         {copiedId === survey.unique_link_id ? 'Copied!' : 'Copy Link'}
                       </button>
                       <a
                         href={`/surveys/${survey.id}/responses`}
-                        className="text-[#A1A1A1] hover:text-white transition-colors"
+                        className="text-[#6b4f3f] hover:text-[#e66b67] transition-colors"
                       >
                         View
                       </a>
