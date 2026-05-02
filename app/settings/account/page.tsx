@@ -45,18 +45,18 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#fff5ec]">
       <Nav />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-semibold mb-6 text-[#EDEDED]">Account Settings</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-[#2a1a10]">Account Settings</h2>
 
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-[#EDEDED]">Update Password</h3>
+        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6">
+          <h3 className="text-base font-semibold mb-4 text-[#2a1a10]">Update Password</h3>
 
           <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-md">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-[#A1A1A1] mb-1">
+              <label htmlFor="new-password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
                 New Password
               </label>
               <input
@@ -64,7 +64,7 @@ export default function AccountSettingsPage() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
                 required
                 minLength={6}
                 autoComplete="new-password"
@@ -72,7 +72,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-[#A1A1A1] mb-1">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
                 Confirm Password
               </label>
               <input
@@ -80,7 +80,7 @@ export default function AccountSettingsPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
                 required
                 minLength={6}
                 autoComplete="new-password"
@@ -102,7 +102,7 @@ export default function AccountSettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] disabled:opacity-50 transition-colors"
             >
               {saving ? 'Updating...' : 'Update Password'}
             </button>

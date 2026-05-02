@@ -42,17 +42,17 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+    <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
       <div className="max-w-sm w-full px-6">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#EDEDED]">
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#2a1a10]">
             <Image src="/backtalk-icon.svg" alt="Backtalk" width={32} height={32} />
             Backtalk
           </Link>
         </div>
 
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
-          <h1 className="text-xl font-semibold text-[#EDEDED] mb-6 text-center">Sign Up</h1>
+        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
+          <h1 className="text-xl font-semibold text-[#2a1a10] mb-6 text-center">Sign Up</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
@@ -62,7 +62,7 @@ export default function SignupPage() {
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#A1A1A1] mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-[#6b4f3f] mb-1">
                 Email
               </label>
               <input
@@ -71,12 +71,12 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#A1A1A1] mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
                 Password
               </label>
               <input
@@ -86,23 +86,23 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
               />
-              <p className="mt-1 text-xs text-[#666666]">Minimum 6 characters</p>
+              <p className="mt-1 text-xs text-[#a68b7a]">Minimum 6 characters</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-md hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 focus:ring-offset-[#141414] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 px-4 bg-[#e66b67] text-white font-medium rounded-md hover:bg-[#c95551] focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:ring-offset-2 focus:ring-offset-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#666666]">
+          <p className="mt-6 text-center text-sm text-[#a68b7a]">
             Already have an account?{' '}
-            <a href="/login" className="text-[#3B82F6] font-medium hover:text-[#2563EB]">
+            <a href="/login" className="text-[#e66b67] font-medium hover:text-[#c95551]">
               Log in
             </a>
           </p>

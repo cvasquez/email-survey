@@ -281,7 +281,7 @@ export default function ResponsesPage() {
     if (!ref.current) return
     const buttons = ref.current.querySelectorAll<HTMLElement>('[data-html2canvas-ignore]')
     buttons.forEach(btn => btn.style.visibility = 'hidden')
-    const canvas = await html2canvas(ref.current, { backgroundColor: '#141414', scale: 2 })
+    const canvas = await html2canvas(ref.current, { backgroundColor: '#ffffff', scale: 2 })
     buttons.forEach(btn => btn.style.visibility = '')
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
@@ -292,22 +292,22 @@ export default function ResponsesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <p className="text-[#A1A1A1]">Loading responses...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
+        <p className="text-[#6b4f3f]">Loading responses...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+      <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
         <div className="max-w-md w-full px-6">
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
+          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
             <h1 className="text-2xl font-semibold mb-4 text-[#EF4444]">Error</h1>
-            <p className="text-[#A1A1A1] mb-4">{error}</p>
+            <p className="text-[#6b4f3f] mb-4">{error}</p>
             <a
               href="/dashboard"
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="inline-block px-4 py-2 bg-[#e66b67] text-white rounded-md hover:bg-[#c95551]"
             >
               Back to Dashboard
             </a>
@@ -318,7 +318,7 @@ export default function ResponsesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#fff5ec]">
       <Nav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -330,22 +330,22 @@ export default function ResponsesPage() {
                 type="text"
                 value={titleDraft}
                 onChange={(e) => setTitleDraft(e.target.value)}
-                className="text-2xl font-semibold bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-1 text-[#EDEDED] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] flex-1"
+                className="text-2xl font-semibold bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-1 text-[#2a1a10] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] flex-1"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') renameSurvey()
                   if (e.key === 'Escape') setEditingTitle(false)
                 }}
               />
-              <button onClick={renameSurvey} className="px-3 py-1 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] transition-colors">Save</button>
-              <button onClick={() => setEditingTitle(false)} className="px-3 py-1 text-[#A1A1A1] text-sm hover:text-[#EDEDED] transition-colors">Cancel</button>
+              <button onClick={renameSurvey} className="px-3 py-1 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] transition-colors">Save</button>
+              <button onClick={() => setEditingTitle(false)} className="px-3 py-1 text-[#6b4f3f] text-sm hover:text-[#2a1a10] transition-colors">Cancel</button>
             </div>
           ) : (
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-semibold text-[#EDEDED]">{survey?.title}</h2>
+              <h2 className="text-2xl font-semibold text-[#2a1a10]">{survey?.title}</h2>
               <button
                 onClick={() => { setTitleDraft(survey?.title || ''); setEditingTitle(true) }}
-                className="text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                className="text-sm text-[#e66b67] hover:text-[#c95551] transition-colors"
               >
                 Rename
               </button>
@@ -354,14 +354,14 @@ export default function ResponsesPage() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={copyLink}
-              className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition"
+              className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition"
             >
               {copied ? 'Copied!' : 'Copy Link'}
             </button>
             <button
               onClick={copyStats}
               disabled={activeResponses.length === 0}
-              className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition disabled:opacity-50"
+              className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition disabled:opacity-50"
             >
               {copiedStats ? 'Copied!' : 'Copy Stats'}
             </button>
@@ -377,14 +377,14 @@ export default function ResponsesPage() {
 
         {/* Survey Links */}
         {survey?.answer_options && survey.answer_options.length > 0 && (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg mb-6">
+          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg mb-6">
             <button
               onClick={() => setShowLinks(!showLinks)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-[#1A1A1A] transition rounded-lg"
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-[#fdf6ee] transition rounded-lg"
             >
-              <h3 className="text-sm font-semibold text-[#EDEDED]">Survey Links</h3>
+              <h3 className="text-sm font-semibold text-[#2a1a10]">Survey Links</h3>
               <svg
-                className={`w-4 h-4 text-[#A1A1A1] transition-transform ${showLinks ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-[#6b4f3f] transition-transform ${showLinks ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -412,7 +412,7 @@ export default function ResponsesPage() {
                   setCopiedLinks(true)
                   setTimeout(() => setCopiedLinks(false), 2000)
                 }}
-                className="px-3 py-1 text-sm bg-[#1A1A1A] text-[#A1A1A1] border border-[#262626] rounded-md hover:text-[#EDEDED] hover:border-[#333] transition"
+                className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition"
               >
                 {copiedLinks ? 'Copied!' : 'Copy All Links'}
               </button>
@@ -424,9 +424,9 @@ export default function ResponsesPage() {
                 const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
                 return (
                   <div key={index} className="flex items-center gap-2 group">
-                    <code className="flex-1 text-sm text-[#A1A1A1] bg-[#0A0A0A] border border-[#262626] rounded px-3 py-2 overflow-x-auto">
-                      <span className="text-[#EDEDED]">{option}</span>
-                      <span className="text-[#666666]">: </span>
+                    <code className="flex-1 text-sm text-[#6b4f3f] bg-[#fff5ec] border border-[#e8dfd2] rounded px-3 py-2 overflow-x-auto">
+                      <span className="text-[#2a1a10]">{option}</span>
+                      <span className="text-[#a68b7a]">: </span>
                       {url}
                     </code>
                     <button
@@ -437,7 +437,7 @@ export default function ResponsesPage() {
                         setCopiedLinks(true)
                         setTimeout(() => setCopiedLinks(false), 2000)
                       }}
-                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#A1A1A1] hover:text-[#EDEDED] transition"
+                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#6b4f3f] hover:text-[#2a1a10] transition"
                       title="Copy as hyperlink"
                     >
                       Link
@@ -448,7 +448,7 @@ export default function ResponsesPage() {
                         setCopiedLinks(true)
                         setTimeout(() => setCopiedLinks(false), 2000)
                       }}
-                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#A1A1A1] hover:text-[#EDEDED] transition"
+                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#6b4f3f] hover:text-[#2a1a10] transition"
                       title="Copy URL only"
                     >
                       URL
@@ -463,35 +463,35 @@ export default function ResponsesPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-            <p className="text-sm text-[#A1A1A1]">Total Responses</p>
-            <p className="text-2xl font-semibold text-[#EDEDED]">{activeResponses.length}</p>
+          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
+            <p className="text-sm text-[#6b4f3f]">Total Responses</p>
+            <p className="text-2xl font-semibold text-[#2a1a10]">{activeResponses.length}</p>
             {botCount > 0 && hideBots && (
-              <p className="text-xs text-[#666666] mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
+              <p className="text-xs text-[#a68b7a] mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
             )}
           </div>
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-            <p className="text-sm text-[#A1A1A1]">Total Comments</p>
-            <p className="text-2xl font-semibold text-[#EDEDED]">
+          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
+            <p className="text-sm text-[#6b4f3f]">Total Comments</p>
+            <p className="text-2xl font-semibold text-[#2a1a10]">
               {totalComments}
-              <span className="text-sm font-normal text-[#666666] ml-1">
+              <span className="text-sm font-normal text-[#a68b7a] ml-1">
                 ({activeResponses.length > 0 ? Math.round((totalComments / activeResponses.length) * 100) : 0}%)
               </span>
             </p>
           </div>
           {answerCounts.map(([value, { total, withComments }]) => (
-            <div key={value} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-              <p className="text-sm text-[#A1A1A1] truncate">{value}</p>
-              <p className="text-2xl font-semibold text-[#EDEDED]">
+            <div key={value} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
+              <p className="text-sm text-[#6b4f3f] truncate">{value}</p>
+              <p className="text-2xl font-semibold text-[#2a1a10]">
                 {total}
-                <span className="text-sm font-normal text-[#666666] ml-1">
+                <span className="text-sm font-normal text-[#a68b7a] ml-1">
                   ({activeResponses.length > 0 ? Math.round((total / activeResponses.length) * 100) : 0}%)
                 </span>
               </p>
-              <p className="text-xs text-[#666666] mt-1">
+              <p className="text-xs text-[#a68b7a] mt-1">
                 {total > 0 ? Math.round((withComments / total) * 100) : 0}% commented
               </p>
-              <p className="text-xs text-[#666666]">
+              <p className="text-xs text-[#a68b7a]">
                 {totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0}% of all comments
               </p>
             </div>
@@ -501,13 +501,13 @@ export default function ResponsesPage() {
         {/* Visualizations */}
         {activeResponses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <div ref={chartRef} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <div ref={chartRef} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-[#A1A1A1]">Answer Distribution</p>
+                <p className="text-sm font-medium text-[#6b4f3f]">Answer Distribution</p>
                 <button
                   data-html2canvas-ignore
                   onClick={() => downloadPng(chartRef, `${survey?.title || 'chart'}-distribution.png`)}
-                  className="text-xs text-[#666666] hover:text-[#A1A1A1]"
+                  className="text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
                 >
                   Save PNG
                 </button>
@@ -515,13 +515,13 @@ export default function ResponsesPage() {
               <AnswerDistributionChart answerCounts={answerCounts} totalResponses={activeResponses.length} />
             </div>
             {locationBreakdowns.countries.length > 0 && (
-              <div ref={mapRef} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+              <div ref={mapRef} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-medium text-[#A1A1A1]">Response Locations</p>
+                  <p className="text-sm font-medium text-[#6b4f3f]">Response Locations</p>
                   <button
                     data-html2canvas-ignore
                     onClick={() => downloadPng(mapRef, `${survey?.title || 'map'}-locations.png`)}
-                    className="text-xs text-[#666666] hover:text-[#A1A1A1]"
+                    className="text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
                   >
                     Save PNG
                   </button>
@@ -536,26 +536,26 @@ export default function ResponsesPage() {
         {(locationBreakdowns.countries.length > 0 || locationBreakdowns.usRegions.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {locationBreakdowns.countries.length > 0 && (
-              <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-                <p className="text-sm font-medium text-[#A1A1A1] mb-2">By Country</p>
+              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
+                <p className="text-sm font-medium text-[#6b4f3f] mb-2">By Country</p>
                 <div className="space-y-1">
                   {locationBreakdowns.countries.map(([country, count]) => (
                     <div key={country} className="flex justify-between text-sm">
-                      <span className="text-[#EDEDED]">{country}</span>
-                      <span className="text-[#666666]">{count}</span>
+                      <span className="text-[#2a1a10]">{country}</span>
+                      <span className="text-[#a68b7a]">{count}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
             {locationBreakdowns.usRegions.length > 0 && (
-              <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-                <p className="text-sm font-medium text-[#A1A1A1] mb-2">US by Region</p>
+              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
+                <p className="text-sm font-medium text-[#6b4f3f] mb-2">US by Region</p>
                 <div className="space-y-1">
                   {locationBreakdowns.usRegions.map(([region, count]) => (
                     <div key={region} className="flex justify-between text-sm">
-                      <span className="text-[#EDEDED]">{region}</span>
-                      <span className="text-[#666666]">{count}</span>
+                      <span className="text-[#2a1a10]">{region}</span>
+                      <span className="text-[#a68b7a]">{count}</span>
                     </div>
                   ))}
                 </div>
@@ -572,24 +572,24 @@ export default function ResponsesPage() {
               placeholder="Filter responses..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] w-full sm:w-64"
+              className="px-4 py-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] w-full sm:w-64"
             />
-            <label className="flex items-center gap-2 text-sm text-[#A1A1A1] cursor-pointer whitespace-nowrap">
+            <label className="flex items-center gap-2 text-sm text-[#6b4f3f] cursor-pointer whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={commentsOnly}
                 onChange={(e) => setCommentsOnly(e.target.checked)}
-                className="rounded border-[#333333] bg-[#1A1A1A] text-[#3B82F6] focus:ring-[#3B82F6]"
+                className="rounded border-[#d6c8b6] bg-[#fdf6ee] text-[#e66b67] focus:ring-[#e66b67]"
               />
               Comments only
             </label>
             {botCount > 0 && (
-              <label className="flex items-center gap-2 text-sm text-[#A1A1A1] cursor-pointer whitespace-nowrap">
+              <label className="flex items-center gap-2 text-sm text-[#6b4f3f] cursor-pointer whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={hideBots}
                   onChange={(e) => setHideBots(e.target.checked)}
-                  className="rounded border-[#333333] bg-[#1A1A1A] text-[#3B82F6] focus:ring-[#3B82F6]"
+                  className="rounded border-[#d6c8b6] bg-[#fdf6ee] text-[#e66b67] focus:ring-[#e66b67]"
                 />
                 Hide bots ({botCount})
               </label>
@@ -598,15 +598,15 @@ export default function ResponsesPage() {
           <button
             onClick={exportToCSV}
             disabled={activeResponses.length === 0}
-            className="px-4 py-2 bg-[#3B82F6] text-white rounded-md hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="px-4 py-2 bg-[#e66b67] text-white rounded-md hover:bg-[#c95551] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             Export to CSV
           </button>
         </div>
 
         {filteredResponses.length === 0 ? (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-8 text-center">
-            <p className="text-[#A1A1A1]">
+          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8 text-center">
+            <p className="text-[#6b4f3f]">
               {responses.length === 0
                 ? 'No responses yet. Share your survey link to start collecting responses!'
                 : activeResponses.length === 0
@@ -619,9 +619,9 @@ export default function ResponsesPage() {
             {/* Mobile card layout */}
             <div className="space-y-4 md:hidden">
               {filteredResponses.map((response) => (
-                <div key={response.id} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+                <div key={response.id} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-medium text-[#EDEDED]">{response.answer_value}</span>
+                    <span className="text-sm font-medium text-[#2a1a10]">{response.answer_value}</span>
                     <button
                       onClick={() => deleteResponse(response.id)}
                       disabled={deletingId === response.id}
@@ -632,16 +632,16 @@ export default function ResponsesPage() {
                   </div>
                   {response.free_response && (
                     <div className="group/resp relative mb-2">
-                      <p className="text-sm text-[#EDEDED]">{response.free_response}</p>
+                      <p className="text-sm text-[#2a1a10]">{response.free_response}</p>
                       <button
                         onClick={() => copyResponse(response)}
-                        className="mt-1 text-xs text-[#666666] hover:text-[#A1A1A1]"
+                        className="mt-1 text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
                       >
                         {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#666666]">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#a68b7a]">
                     <span>{formatDate(response.created_at)}</span>
                     {survey?.require_name && response.respondent_name && (
                       <span>{response.respondent_name}</span>
@@ -657,9 +657,9 @@ export default function ResponsesPage() {
             </div>
 
             {/* Desktop table layout */}
-            <div className="hidden md:block bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+            <div className="hidden md:block bg-[#ffffff] border border-[#e8dfd2] rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#262626] table-fixed">
+                <table className="min-w-full divide-y divide-[#e8dfd2] table-fixed">
                   <colgroup>
                     <col className="w-[100px]" />
                     <col className="w-[100px]" />
@@ -672,49 +672,49 @@ export default function ResponsesPage() {
                   </colgroup>
                   <thead>
                     <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Answer
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Response
                       </th>
                       {survey?.require_name && (
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                           Name
                         </th>
                       )}
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Device
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                         Hash
                       </th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-[#666666] uppercase tracking-wider">
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#262626]">
+                  <tbody className="divide-y divide-[#e8dfd2]">
                     {filteredResponses.map((response) => (
-                      <tr key={response.id} className="hover:bg-[#1A1A1A] transition-colors">
-                        <td className="px-3 py-3 text-xs text-[#666666]">
+                      <tr key={response.id} className="hover:bg-[#fdf6ee] transition-colors">
+                        <td className="px-3 py-3 text-xs text-[#a68b7a]">
                           {formatDate(response.created_at)}
                         </td>
-                        <td className="px-3 py-3 text-sm font-medium text-[#EDEDED] truncate">
+                        <td className="px-3 py-3 text-sm font-medium text-[#2a1a10] truncate">
                           {response.answer_value}
                         </td>
-                        <td className="px-3 py-3 text-sm text-[#EDEDED]">
+                        <td className="px-3 py-3 text-sm text-[#2a1a10]">
                           {response.free_response ? (
                             <div className="group/resp relative">
                               <span>{response.free_response}</span>
                               <button
                                 onClick={() => copyResponse(response)}
-                                className="ml-2 text-xs text-[#666666] hover:text-[#A1A1A1] opacity-0 group-hover/resp:opacity-100 transition-opacity"
+                                className="ml-2 text-xs text-[#a68b7a] hover:text-[#6b4f3f] opacity-0 group-hover/resp:opacity-100 transition-opacity"
                               >
                                 {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
                               </button>
@@ -722,17 +722,17 @@ export default function ResponsesPage() {
                           ) : '-'}
                         </td>
                         {survey?.require_name && (
-                          <td className="px-3 py-3 text-sm text-[#A1A1A1] truncate">
+                          <td className="px-3 py-3 text-sm text-[#6b4f3f] truncate">
                             {response.respondent_name || '-'}
                           </td>
                         )}
-                        <td className="px-3 py-3 text-xs text-[#666666] truncate">
+                        <td className="px-3 py-3 text-xs text-[#a68b7a] truncate">
                           {response.location || '-'}
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#666666] truncate">
+                        <td className="px-3 py-3 text-xs text-[#a68b7a] truncate">
                           {parseUserAgent(response.user_agent)}
                         </td>
-                        <td className="px-3 py-3 text-xs text-[#666666] font-mono truncate">
+                        <td className="px-3 py-3 text-xs text-[#a68b7a] font-mono truncate">
                           {response.hash_md5 ? response.hash_md5.substring(0, 8) : '-'}
                         </td>
                         <td className="px-3 py-3 text-right text-sm">

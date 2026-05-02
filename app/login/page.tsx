@@ -37,17 +37,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
+    <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
       <div className="max-w-sm w-full px-6">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#EDEDED]">
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#2a1a10]">
             <Image src="/backtalk-icon.svg" alt="Backtalk" width={32} height={32} />
             Backtalk
           </Link>
         </div>
 
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-8">
-          <h1 className="text-xl font-semibold text-[#EDEDED] mb-6 text-center">Log In</h1>
+        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
+          <h1 className="text-xl font-semibold text-[#2a1a10] mb-6 text-center">Log In</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#A1A1A1] mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#6b4f3f] mb-2">
                 Email
               </label>
               <input
@@ -66,16 +66,16 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-[#A1A1A1]">
+                <label htmlFor="password" className="block text-sm font-medium text-[#6b4f3f]">
                   Password
                 </label>
-                <a href="/forgot-password" className="text-sm text-[#3B82F6] font-medium hover:text-[#2563EB]">
+                <a href="/forgot-password" className="text-sm text-[#e66b67] font-medium hover:text-[#c95551]">
                   Forgot password?
                 </a>
               </div>
@@ -85,28 +85,28 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#262626] rounded-md text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-md hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 focus:ring-offset-[#141414] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 px-4 bg-[#e66b67] text-white font-medium rounded-md hover:bg-[#c95551] focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:ring-offset-2 focus:ring-offset-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#666666]">
+          <p className="mt-6 text-center text-sm text-[#a68b7a]">
             Don&apos;t have an account?{' '}
-            <a href="/signup" className="text-[#3B82F6] font-medium hover:text-[#2563EB]">
+            <a href="/signup" className="text-[#e66b67] font-medium hover:text-[#c95551]">
               Sign up
             </a>
           </p>
 
           <p className="mt-2 text-center text-sm">
-            <a href="/resend-verification" className="text-[#666666] hover:text-[#A1A1A1] transition-colors">
+            <a href="/resend-verification" className="text-[#a68b7a] hover:text-[#6b4f3f] transition-colors">
               Resend verification email
             </a>
           </p>

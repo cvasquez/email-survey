@@ -179,15 +179,15 @@ export default function TeamSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#fff5ec]">
       <Nav />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-semibold mb-6 text-[#EDEDED]">Team Settings</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-[#2a1a10]">Team Settings</h2>
 
         {loading && (
           <div className="text-center py-12">
-            <p className="text-[#A1A1A1]">Loading...</p>
+            <p className="text-[#6b4f3f]">Loading...</p>
           </div>
         )}
 
@@ -200,15 +200,15 @@ export default function TeamSettingsPage() {
         {!loading && !error && org && (
           <>
             {/* Organization Name */}
-            <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
-              <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">Organization</h3>
+            <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
+              <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">Organization</h3>
               {editingName ? (
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    className="flex-1 bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                    className="flex-1 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRenameOrg()
@@ -220,7 +220,7 @@ export default function TeamSettingsPage() {
                   />
                   <button
                     onClick={handleRenameOrg}
-                    className="px-3 py-2 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] transition-colors"
+                    className="px-3 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] transition-colors"
                   >
                     Save
                   </button>
@@ -229,18 +229,18 @@ export default function TeamSettingsPage() {
                       setOrgName(org.name)
                       setEditingName(false)
                     }}
-                    className="px-3 py-2 text-[#A1A1A1] text-sm hover:text-[#EDEDED] transition-colors"
+                    className="px-3 py-2 text-[#6b4f3f] text-sm hover:text-[#2a1a10] transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="text-[#EDEDED]">{org.name}</span>
+                  <span className="text-[#2a1a10]">{org.name}</span>
                   {isOwner && (
                     <button
                       onClick={() => setEditingName(true)}
-                      className="text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                      className="text-sm text-[#e66b67] hover:text-[#c95551] transition-colors"
                     >
                       Rename
                     </button>
@@ -250,26 +250,26 @@ export default function TeamSettingsPage() {
             </div>
 
             {/* Members */}
-            <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
-              <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">
+            <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
+              <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">
                 Members ({members.length})
               </h3>
-              <div className="divide-y divide-[#262626]">
+              <div className="divide-y divide-[#e8dfd2]">
                 {members.map((member) => (
                   <div
                     key={member.id}
                     className="flex items-center justify-between py-3"
                   >
                     <div>
-                      <span className="text-sm text-[#EDEDED]">
+                      <span className="text-sm text-[#2a1a10]">
                         {member.email}
                       </span>
-                      <span className="ml-2 text-xs text-[#666666] capitalize">
+                      <span className="ml-2 text-xs text-[#a68b7a] capitalize">
                         {member.role}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <span className="text-[#666666]">
+                      <span className="text-[#a68b7a]">
                         {formatDate(member.created_at)}
                       </span>
                       {isOwner && members.length > 1 && (
@@ -293,18 +293,18 @@ export default function TeamSettingsPage() {
 
             {/* Pending Invites */}
             {invites.length > 0 && (
-              <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
-                <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">
+              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
+                <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">
                   Pending Invites ({invites.length})
                 </h3>
-                <div className="divide-y divide-[#262626]">
+                <div className="divide-y divide-[#e8dfd2]">
                   {invites.map((invite) => (
                     <div
                       key={invite.id}
                       className="flex items-center justify-between py-3"
                     >
                       <div>
-                        <span className="text-sm text-[#EDEDED]">
+                        <span className="text-sm text-[#2a1a10]">
                           {invite.email}
                         </span>
                         <span className="ml-2 text-xs text-[#EAB308] bg-[#EAB308]/10 px-2 py-0.5 rounded-full">
@@ -312,7 +312,7 @@ export default function TeamSettingsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-sm">
-                        <span className="text-[#666666]">
+                        <span className="text-[#a68b7a]">
                           {formatDate(invite.created_at)}
                         </span>
                         {isOwner && (
@@ -335,27 +335,27 @@ export default function TeamSettingsPage() {
 
             {/* Invite Form */}
             {isOwner && (
-              <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-6">
-                <h3 className="text-base font-semibold mb-3 text-[#EDEDED]">Invite Member</h3>
+              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-6 mb-6">
+                <h3 className="text-base font-semibold mb-3 text-[#2a1a10]">Invite Member</h3>
                 <form onSubmit={handleInvite} className="flex items-center gap-3">
                   <input
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="flex-1 bg-[#1A1A1A] border border-[#262626] rounded-md px-3 py-2 text-sm text-[#EDEDED] placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors"
+                    className="flex-1 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-2 text-sm text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
                     required
                   />
                   <button
                     type="submit"
                     disabled={inviting}
-                    className="px-4 py-2 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-[#2563EB] disabled:opacity-50 transition-colors"
+                    className="px-4 py-2 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] disabled:opacity-50 transition-colors"
                   >
                     {inviting ? 'Inviting...' : 'Invite'}
                   </button>
                 </form>
                 {inviteMessage && (
-                  <p className="mt-3 text-sm text-[#A1A1A1]">{inviteMessage}</p>
+                  <p className="mt-3 text-sm text-[#6b4f3f]">{inviteMessage}</p>
                 )}
               </div>
             )}
