@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { AuthShell } from '@/app/components/auth-shell'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [updates, setUpdates] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -25,13 +26,10 @@ export default function SignupPage() {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: { product_updates: updates },
         },
       })
-
       if (error) throw error
-
-      // Note: Depending on your Supabase settings, you may need to verify email
-      // For now, we'll redirect to dashboard after successful signup
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
@@ -42,72 +40,64 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
-      <div className="max-w-sm w-full px-6">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-semibold text-[#2a1a10]">
-            <Image src="/backtalk-icon.svg" alt="Backtalk" width={32} height={32} />
-            Backtalk
-          </Link>
-        </div>
+    <AuthShell>
+      <form className="wma-form" onSubmit={handleSignup}>
+        <Link className="wma-back" href="/">← Back to home</Link>
+        <h1 className="wma-h1">Start a conversation.</h1>
+        <p className="wma-deck">
+          Free for your first 1,000 responses a month. No credit card, no
+          question-builder rabbit holes.
+        </p>
 
-        <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
-          <h1 className="text-xl font-semibold text-[#2a1a10] mb-6 text-center">Sign Up</h1>
+        {error && <div className="wma-error">{error}</div>}
 
-          {error && (
-            <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] rounded-md text-sm">
-              {error}
-            </div>
-          )}
+        <label className="wma-field">
+          <span className="wma-label">Email</span>
+          <input
+            type="email"
+            placeholder="you@yourdomain.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+        </label>
 
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#6b4f3f] mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-              />
-            </div>
+        <label className="wma-field">
+          <span className="wma-label">Password</span>
+          <input
+            type="password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={6}
+            autoComplete="new-password"
+            required
+          />
+          <span className="wma-hint">Use 6+ characters. Numbers and symbols welcome but not required.</span>
+        </label>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#6b4f3f] mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] transition-colors"
-              />
-              <p className="mt-1 text-xs text-[#a68b7a]">Minimum 6 characters</p>
-            </div>
+        <label className="wma-check">
+          <input
+            type="checkbox"
+            checked={updates}
+            onChange={(e) => setUpdates(e.target.checked)}
+          />
+          <span>Send me product updates. Roughly once a month, never on weekends.</span>
+        </label>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-[#e66b67] text-white font-medium rounded-md hover:bg-[#c95551] focus:outline-none focus:ring-2 focus:ring-[#e66b67] focus:ring-offset-2 focus:ring-offset-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </button>
-          </form>
+        <button type="submit" className="wma-btn-primary" disabled={loading}>
+          {loading ? 'Creating account…' : 'Create my account →'}
+        </button>
 
-          <p className="mt-6 text-center text-sm text-[#a68b7a]">
-            Already have an account?{' '}
-            <a href="/login" className="text-[#e66b67] font-medium hover:text-[#c95551]">
-              Log in
-            </a>
-          </p>
-        </div>
-      </div>
-    </div>
+        <p className="wma-fineprint">
+          By signing up you agree to our <a href="#">Terms</a> and{' '}
+          <a href="#">Privacy Policy</a>.
+        </p>
+        <p className="wma-alt">
+          Already have an account? <a href="/login">Sign in.</a>
+        </p>
+      </form>
+    </AuthShell>
   )
 }

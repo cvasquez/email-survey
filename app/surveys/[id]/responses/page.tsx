@@ -5,25 +5,25 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatDate } from '@/lib/utils'
 import type { Response, Survey } from '@/types/database'
-import { Nav } from '@/app/components/nav'
-import { AnswerDistributionChart } from '@/app/components/answer-distribution-chart'
+import { AppShell } from '@/app/components/app-shell'
 import { ResponseMap } from '@/app/components/response-map'
 import html2canvas from 'html2canvas'
 
 function parseUserAgent(ua: string | null): string {
   if (!ua) return '-'
-  // Extract OS/platform info
   const match = ua.match(/\(([^)]+)\)/)
   if (!match) return '-'
   const info = match[1]
   if (info.includes('Windows')) return 'Windows'
   if (info.includes('Macintosh') || info.includes('Mac OS')) return 'Mac'
-  if (info.includes('iPhone')) return 'iPhone'
-  if (info.includes('iPad')) return 'iPad'
+  if (info.includes('iPhone')) return 'iOS'
+  if (info.includes('iPad')) return 'iPadOS'
   if (info.includes('Android')) return 'Android'
   if (info.includes('Linux')) return 'Linux'
   return info.split(';')[0] || '-'
 }
+
+const ANSWER_PALETTE = ['#e66b67', '#2a1a10', '#a68b7a', '#ff9a87', '#6b4f3f', '#c69f86', '#8a3315', '#d6c8b6']
 
 export default function ResponsesPage() {
   const params = useParams()
@@ -31,7 +31,7 @@ export default function ResponsesPage() {
   const surveyId = params.id as string
   const supabase = createClient()
 
-  const chartRef = useRef<HTMLDivElement>(null)
+  const distRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<HTMLDivElement>(null)
 
   const [survey, setSurvey] = useState<Survey | null>(null)
@@ -39,8 +39,7 @@ export default function ResponsesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
-  const [copied, setCopied] = useState(false)
-  const [copiedStats, setCopiedStats] = useState(false)
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [copiedResponseId, setCopiedResponseId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deletingSurvey, setDeletingSurvey] = useState(false)
@@ -48,8 +47,6 @@ export default function ResponsesPage() {
   const [hideBots, setHideBots] = useState(true)
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState('')
-  const [copiedLinks, setCopiedLinks] = useState(false)
-  const [showLinks, setShowLinks] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,26 +57,18 @@ export default function ResponsesPage() {
           return
         }
 
-        // RLS ensures user can only access surveys from their orgs
         const { data: surveyData, error: surveyError } = await supabase
           .from('surveys')
           .select('*')
           .eq('id', surveyId)
           .single()
 
-        if (surveyError || !surveyData) {
-          throw new Error('Survey not found')
-        }
-
+        if (surveyError || !surveyData) throw new Error('Survey not found')
         setSurvey(surveyData)
 
         const responseData = await fetch(`/api/surveys/${surveyId}/responses`)
         const responseJson = await responseData.json()
-
-        if (!responseData.ok) {
-          throw new Error(responseJson.error || 'Failed to fetch responses')
-        }
-
+        if (!responseData.ok) throw new Error(responseJson.error || 'Failed to fetch responses')
         setResponses(responseJson.responses)
       } catch (err: any) {
         setError(err.message)
@@ -91,18 +80,55 @@ export default function ResponsesPage() {
     fetchData()
   }, [surveyId, supabase, router])
 
-  const copyLink = () => {
+  const flash = (key: string) => {
+    setCopiedKey(key)
+    setTimeout(() => setCopiedKey(null), 2000)
+  }
+
+  const copyShareLink = () => {
     if (!survey) return
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
     const link = `${baseUrl}/s/${survey.unique_link_id}?answer=YOUR-ANSWER-HERE`
     navigator.clipboard.writeText(link)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    flash('share')
+  }
+
+  const copyAnswerLink = (option: string) => {
+    if (!survey) return
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
+    try {
+      const blob = new Blob([`<a href="${url}">${option}</a>`], { type: 'text/html' })
+      const textBlob = new Blob([url], { type: 'text/plain' })
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
+    } catch {
+      navigator.clipboard.writeText(url)
+    }
+    flash('answer-' + option)
+  }
+
+  const copyAllAnswerLinks = () => {
+    if (!survey || !survey.answer_options) return
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    const htmlLines = survey.answer_options.map((option: string) => {
+      const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
+      return `<a href="${url}">${option}</a>`
+    })
+    const plainLines = survey.answer_options.map((option: string) => {
+      return `${option}: ${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
+    })
+    try {
+      const blob = new Blob([htmlLines.join('<br>')], { type: 'text/html' })
+      const textBlob = new Blob([plainLines.join('\n')], { type: 'text/plain' })
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
+    } catch {
+      navigator.clipboard.writeText(plainLines.join('\n'))
+    }
+    flash('all-answers')
   }
 
   const deleteResponse = async (responseId: string) => {
     if (!confirm('Delete this response? This cannot be undone.')) return
-
     setDeletingId(responseId)
     try {
       const res = await fetch(`/api/responses?id=${responseId}`, { method: 'DELETE' })
@@ -121,7 +147,6 @@ export default function ResponsesPage() {
   const deleteSurvey = async () => {
     if (!survey) return
     if (!confirm(`Delete "${survey.title}" and all its responses? This cannot be undone.`)) return
-
     setDeletingSurvey(true)
     try {
       const res = await fetch(`/api/surveys/${survey.id}`, { method: 'DELETE' })
@@ -153,13 +178,8 @@ export default function ResponsesPage() {
     }
   }
 
-  const botCount = useMemo(() => {
-    return responses.filter((r) => r.is_suspected_bot).length
-  }, [responses])
-
-  const activeResponses = useMemo(() => {
-    return hideBots ? responses.filter((r) => !r.is_suspected_bot) : responses
-  }, [responses, hideBots])
+  const botCount = useMemo(() => responses.filter((r) => r.is_suspected_bot).length, [responses])
+  const activeResponses = useMemo(() => hideBots ? responses.filter((r) => !r.is_suspected_bot) : responses, [responses, hideBots])
 
   const answerCounts = useMemo(() => {
     const counts: Record<string, { total: number; withComments: number }> = {}
@@ -171,14 +191,11 @@ export default function ResponsesPage() {
     return Object.entries(counts).sort((a, b) => b[1].total - a[1].total)
   }, [activeResponses])
 
-  const totalComments = useMemo(() => {
-    return activeResponses.filter((r) => r.free_response?.trim()).length
-  }, [activeResponses])
+  const totalComments = useMemo(() => activeResponses.filter((r) => r.free_response?.trim()).length, [activeResponses])
 
   const locationBreakdowns = useMemo(() => {
     const countries: Record<string, number> = {}
     const usRegions: Record<string, number> = {}
-
     for (const r of activeResponses) {
       if (!r.location) continue
       const parts = r.location.split(', ')
@@ -187,16 +204,13 @@ export default function ResponsesPage() {
       countries[country] = (countries[country] || 0) + 1
       if (country === 'United States') {
         if (parts.length >= 3) {
-          // New format: "City, State, Country"
           const state = parts[parts.length - 2]
           usRegions[state] = (usRegions[state] || 0) + 1
         } else {
-          // Legacy format: "City, Country" — use city as fallback
           usRegions[parts[0]] = (usRegions[parts[0]] || 0) + 1
         }
       }
     }
-
     return {
       countries: Object.entries(countries).sort((a, b) => b[1] - a[1]),
       usRegions: Object.entries(usRegions).sort((a, b) => b[1] - a[1]),
@@ -206,19 +220,18 @@ export default function ResponsesPage() {
   const filteredResponses = activeResponses.filter((response) => {
     if (commentsOnly && !response.free_response?.trim()) return false
     if (!filter) return true
-    const searchLower = filter.toLowerCase()
+    const q = filter.toLowerCase()
     return (
-      response.answer_value.toLowerCase().includes(searchLower) ||
-      response.free_response?.toLowerCase().includes(searchLower) ||
-      response.respondent_name?.toLowerCase().includes(searchLower) ||
-      response.hash_md5?.toLowerCase().includes(searchLower) ||
-      response.location?.toLowerCase().includes(searchLower)
+      response.answer_value.toLowerCase().includes(q) ||
+      response.free_response?.toLowerCase().includes(q) ||
+      response.respondent_name?.toLowerCase().includes(q) ||
+      response.hash_md5?.toLowerCase().includes(q) ||
+      response.location?.toLowerCase().includes(q)
     )
   })
 
   const exportToCSV = () => {
     if (activeResponses.length === 0) return
-
     const headers = ['Timestamp', 'Answer Value', 'Free Response', 'Name', 'Hash MD5', 'IP Address', 'Location', 'Device', 'Suspected Bot']
     const rows = activeResponses.map((r) => [
       r.created_at,
@@ -231,7 +244,6 @@ export default function ResponsesPage() {
       parseUserAgent(r.user_agent),
       r.is_suspected_bot ? 'Yes' : 'No',
     ])
-
     const csvContent = [
       headers.join(','),
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
@@ -259,7 +271,6 @@ export default function ResponsesPage() {
 
   const copyStats = () => {
     if (activeResponses.length === 0) return
-
     const lines: string[] = []
     lines.push(survey?.title || 'Survey Results')
     lines.push(`${activeResponses.length} total responses, ${totalComments} with comments`)
@@ -271,18 +282,16 @@ export default function ResponsesPage() {
       const pctOfAllComments = totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0
       lines.push(`${value}: ${total} (${pct}%). ${commentPct}% commented for ${pctOfAllComments}% of all comments`)
     }
-
     navigator.clipboard.writeText(lines.join('\n'))
-    setCopiedStats(true)
-    setTimeout(() => setCopiedStats(false), 2000)
+    flash('stats')
   }
 
   const downloadPng = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
     const buttons = ref.current.querySelectorAll<HTMLElement>('[data-html2canvas-ignore]')
-    buttons.forEach(btn => btn.style.visibility = 'hidden')
+    buttons.forEach((btn) => (btn.style.visibility = 'hidden'))
     const canvas = await html2canvas(ref.current, { backgroundColor: '#ffffff', scale: 2 })
-    buttons.forEach(btn => btn.style.visibility = '')
+    buttons.forEach((btn) => (btn.style.visibility = ''))
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
     link.href = url
@@ -292,467 +301,366 @@ export default function ResponsesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
-        <p className="text-[#6b4f3f]">Loading responses...</p>
-      </div>
+      <AppShell active="surveys">
+        <div className="wmd-list-empty" style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18 }}>
+          Loading responses…
+        </div>
+      </AppShell>
     )
   }
 
-  if (error) {
+  if (error || !survey) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fff5ec]">
-        <div className="max-w-md w-full px-6">
-          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8">
-            <h1 className="text-2xl font-semibold mb-4 text-[#EF4444]">Error</h1>
-            <p className="text-[#6b4f3f] mb-4">{error}</p>
-            <a
-              href="/dashboard"
-              className="inline-block px-4 py-2 bg-[#e66b67] text-white rounded-md hover:bg-[#c95551]"
-            >
-              Back to Dashboard
-            </a>
+      <AppShell active="surveys">
+        <div className="wmd-card">
+          <div className="wmd-card-body">
+            <h1 className="wmd-pageh" style={{ fontSize: 24 }}>Couldn&apos;t load this survey</h1>
+            <p className="wmd-pagedeck">{error || 'Survey not found.'}</p>
+            <a className="wmd-btn-primary" href="/dashboard" style={{ marginTop: 16, display: 'inline-flex' }}>← Back to surveys</a>
           </div>
         </div>
-      </div>
+      </AppShell>
     )
   }
+
+  const totalActive = activeResponses.length
+  const topAnswer = answerCounts[0]
 
   return (
-    <div className="min-h-screen bg-[#fff5ec]">
-      <Nav />
+    <AppShell active="surveys">
+      <header className="wmd-pagehead">
+        <div>
+          <div className="wmd-crumbs">
+            <a href="/dashboard">Surveys</a>
+            <span className="wmd-crumb-sep">/</span>
+            <span style={{ color: 'var(--ink-2)', textTransform: 'none', letterSpacing: 0, fontSize: 13 }}>{survey.title}</span>
+          </div>
+          <div className="wmd-rh-head">
+            {editingTitle ? (
+              <>
+                <input
+                  className="wmd-form-input"
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  autoFocus
+                  style={{ fontSize: 28, fontWeight: 700, padding: '6px 10px' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') renameSurvey()
+                    if (e.key === 'Escape') setEditingTitle(false)
+                  }}
+                />
+                <button className="wmd-btn-primary wmd-btn-sm" onClick={renameSurvey}>Save</button>
+                <button className="wmd-btn-ghost wmd-btn-sm" onClick={() => setEditingTitle(false)}>Cancel</button>
+              </>
+            ) : (
+              <>
+                <h1 className="wmd-pageh">{survey.title}</h1>
+                {survey.is_active ? (
+                  <span className="wmd-livetag"><span className="wmd-livedot" /> Live</span>
+                ) : (
+                  <span className="wmd-pausedtag">Paused</span>
+                )}
+                <button
+                  className="wmd-btn-ghost wmd-btn-sm"
+                  onClick={() => { setTitleDraft(survey.title); setEditingTitle(true) }}
+                >
+                  Rename
+                </button>
+              </>
+            )}
+          </div>
+          <p className="wmd-pagedeck">
+            {survey.question ? `${survey.question} · ` : ''}Created {formatDate(survey.created_at)}
+          </p>
+        </div>
+        <div className="wmd-pageactions">
+          <button className="wmd-btn-ghost" onClick={copyShareLink}>{copiedKey === 'share' ? 'Copied!' : 'Copy link'}</button>
+          <button className="wmd-btn-ghost" onClick={copyStats} disabled={totalActive === 0}>{copiedKey === 'stats' ? 'Copied!' : 'Copy stats'}</button>
+          <button className="wmd-btn-ghost wmd-btn-warn" onClick={deleteSurvey} disabled={deletingSurvey}>
+            {deletingSurvey ? 'Deleting…' : 'Delete survey'}
+          </button>
+        </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          {editingTitle ? (
-            <div className="flex items-center gap-3 mb-2">
-              <input
-                type="text"
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                className="text-2xl font-semibold bg-[#fdf6ee] border border-[#e8dfd2] rounded-md px-3 py-1 text-[#2a1a10] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] flex-1"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') renameSurvey()
-                  if (e.key === 'Escape') setEditingTitle(false)
-                }}
-              />
-              <button onClick={renameSurvey} className="px-3 py-1 bg-[#e66b67] text-white text-sm rounded-md hover:bg-[#c95551] transition-colors">Save</button>
-              <button onClick={() => setEditingTitle(false)} className="px-3 py-1 text-[#6b4f3f] text-sm hover:text-[#2a1a10] transition-colors">Cancel</button>
+      {survey.answer_options && survey.answer_options.length > 0 && (
+        <section className="wmd-card">
+          <div className="wmd-card-head">
+            <div>
+              <h2 className="wmd-card-h">Survey links</h2>
+              <span className="wmd-card-meta">Drop these into your email. Each one carries a different answer.</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-semibold text-[#2a1a10]">{survey?.title}</h2>
-              <button
-                onClick={() => { setTitleDraft(survey?.title || ''); setEditingTitle(true) }}
-                className="text-sm text-[#e66b67] hover:text-[#c95551] transition-colors"
-              >
-                Rename
-              </button>
-            </div>
-          )}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={copyLink}
-              className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition"
-            >
-              {copied ? 'Copied!' : 'Copy Link'}
-            </button>
-            <button
-              onClick={copyStats}
-              disabled={activeResponses.length === 0}
-              className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition disabled:opacity-50"
-            >
-              {copiedStats ? 'Copied!' : 'Copy Stats'}
-            </button>
-            <button
-              onClick={deleteSurvey}
-              disabled={deletingSurvey}
-              className="px-3 py-1 text-sm text-[#EF4444] hover:text-[#DC2626] hover:bg-[#EF4444]/10 rounded-md transition disabled:opacity-50"
-            >
-              {deletingSurvey ? 'Deleting...' : 'Delete Survey'}
+            <button className="wmd-card-link" onClick={copyAllAnswerLinks}>
+              {copiedKey === 'all-answers' ? 'Copied all!' : 'Copy all'}
             </button>
           </div>
-        </div>
+          <div className="wmd-links">
+            {survey.answer_options.map((option: string, i: number) => {
+              const baseUrl = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_APP_URL || window.location.origin) : ''
+              const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encodeURIComponent(option)}`
+              const color = ANSWER_PALETTE[i % ANSWER_PALETTE.length]
+              return (
+                <div className="wmd-link" key={option}>
+                  <span className="wmd-link-pill" style={{ background: color, color: '#fff' }}>{option}</span>
+                  <code className="wmd-link-url">{url}</code>
+                  <button className="wmd-link-copy" onClick={() => copyAnswerLink(option)}>
+                    {copiedKey === 'answer-' + option ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
-        {/* Survey Links */}
-        {survey?.answer_options && survey.answer_options.length > 0 && (
-          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg mb-6">
-            <button
-              onClick={() => setShowLinks(!showLinks)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-[#fdf6ee] transition rounded-lg"
-            >
-              <h3 className="text-sm font-semibold text-[#2a1a10]">Survey Links</h3>
-              <svg
-                className={`w-4 h-4 text-[#6b4f3f] transition-transform ${showLinks ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {showLinks && <div className="px-6 pb-6">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={() => {
-                  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-                  const htmlLines = survey.answer_options.map((option: string) => {
-                    const encoded = encodeURIComponent(option)
-                    const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
-                    return `<a href="${url}">${option}</a>`
-                  })
-                  const plainLines = survey.answer_options.map((option: string) => {
-                    const encoded = encodeURIComponent(option)
-                    return `${option}: ${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
-                  })
-                  const blob = new Blob([htmlLines.join('<br>')], { type: 'text/html' })
-                  const textBlob = new Blob([plainLines.join('\n')], { type: 'text/plain' })
-                  navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
-                  setCopiedLinks(true)
-                  setTimeout(() => setCopiedLinks(false), 2000)
-                }}
-                className="px-3 py-1 text-sm bg-[#fdf6ee] text-[#6b4f3f] border border-[#e8dfd2] rounded-md hover:text-[#2a1a10] hover:border-[#333] transition"
-              >
-                {copiedLinks ? 'Copied!' : 'Copy All Links'}
+      <section className="wmd-stat-row">
+        <div className="wmd-stat-card">
+          <div className="wmd-stat-lbl">Total responses</div>
+          <div className="wmd-stat-num">{totalActive.toLocaleString()}</div>
+          <div className="wmd-stat-trend">
+            {botCount > 0 && hideBots ? `${botCount} bot${botCount === 1 ? '' : 's'} hidden` : `from ${responses.length} click${responses.length === 1 ? '' : 's'}`}
+          </div>
+        </div>
+        <div className="wmd-stat-card">
+          <div className="wmd-stat-lbl">Comments</div>
+          <div className="wmd-stat-num">
+            {totalComments.toLocaleString()} <span className="wmd-stat-pct">· {totalActive > 0 ? Math.round((totalComments / totalActive) * 100) : 0}%</span>
+          </div>
+          <div className="wmd-stat-trend">of responses</div>
+        </div>
+        {topAnswer && (
+          <div className="wmd-stat-card wmd-stat-card-accent">
+            <div className="wmd-stat-lbl">{topAnswer[0]}</div>
+            <div className="wmd-stat-num">
+              {topAnswer[1].total.toLocaleString()}{' '}
+              <span className="wmd-stat-pct">· {totalActive > 0 ? Math.round((topAnswer[1].total / totalActive) * 100) : 0}%</span>
+            </div>
+            <div className="wmd-stat-trend">leading answer</div>
+          </div>
+        )}
+        {answerCounts[1] && (
+          <div className="wmd-stat-card">
+            <div className="wmd-stat-lbl">{answerCounts[1][0]}</div>
+            <div className="wmd-stat-num">
+              {answerCounts[1][1].total.toLocaleString()}{' '}
+              <span className="wmd-stat-pct">· {totalActive > 0 ? Math.round((answerCounts[1][1].total / totalActive) * 100) : 0}%</span>
+            </div>
+            <div className="wmd-stat-trend">runner-up</div>
+          </div>
+        )}
+        {!topAnswer && (
+          <div className="wmd-stat-card">
+            <div className="wmd-stat-lbl">Top answer</div>
+            <div className="wmd-stat-num">—</div>
+            <div className="wmd-stat-trend">no responses yet</div>
+          </div>
+        )}
+        {!answerCounts[1] && topAnswer && (
+          <div className="wmd-stat-card">
+            <div className="wmd-stat-lbl">Unique answers</div>
+            <div className="wmd-stat-num">{answerCounts.length}</div>
+            <div className="wmd-stat-trend">distinct values</div>
+          </div>
+        )}
+      </section>
+
+      {totalActive > 0 && (
+        <section className="wmd-grid-2">
+          <div className="wmd-card" ref={distRef}>
+            <div className="wmd-card-head">
+              <h2 className="wmd-card-h">Answer distribution</h2>
+              <button data-html2canvas-ignore className="wmd-card-link" onClick={() => downloadPng(distRef, `${survey.title}-distribution.png`)}>
+                Save PNG
               </button>
             </div>
-            <div className="space-y-2">
-              {survey.answer_options.map((option: string, index: number) => {
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-                const encoded = encodeURIComponent(option)
-                const url = `${baseUrl}/s/${survey.unique_link_id}?answer=${encoded}`
+            <div className="wmd-hbars">
+              {answerCounts.map(([value, { total, withComments }], i) => {
+                const pct = totalActive > 0 ? (total / totalActive) * 100 : 0
+                const commentFrac = total > 0 ? withComments / total : 0
+                const color = ANSWER_PALETTE[i % ANSWER_PALETTE.length]
                 return (
-                  <div key={index} className="flex items-center gap-2 group">
-                    <code className="flex-1 text-sm text-[#6b4f3f] bg-[#fff5ec] border border-[#e8dfd2] rounded px-3 py-2 overflow-x-auto">
-                      <span className="text-[#2a1a10]">{option}</span>
-                      <span className="text-[#a68b7a]">: </span>
-                      {url}
-                    </code>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob([`<a href="${url}">${option}</a>`], { type: 'text/html' })
-                        const textBlob = new Blob([url], { type: 'text/plain' })
-                        navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
-                        setCopiedLinks(true)
-                        setTimeout(() => setCopiedLinks(false), 2000)
-                      }}
-                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#6b4f3f] hover:text-[#2a1a10] transition"
-                      title="Copy as hyperlink"
-                    >
-                      Link
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(url)
-                        setCopiedLinks(true)
-                        setTimeout(() => setCopiedLinks(false), 2000)
-                      }}
-                      className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-[#6b4f3f] hover:text-[#2a1a10] transition"
-                      title="Copy URL only"
-                    >
-                      URL
-                    </button>
+                  <div className="wmd-hbar" key={value}>
+                    <div className="wmd-hbar-head">
+                      <span className="wmd-hbar-label">{value}</span>
+                      <span className="wmd-hbar-vals">
+                        <span className="wmd-hbar-count">{total.toLocaleString()}</span>
+                        <span className="wmd-hbar-pct">{Math.round(pct)}%</span>
+                      </span>
+                    </div>
+                    <div className="wmd-hbar-shaft">
+                      <div className="wmd-hbar-fill" style={{ width: pct + '%', background: color }} />
+                      <div className="wmd-hbar-fill-comment" style={{ width: pct * commentFrac + '%' }} title={`${withComments} with comments`} />
+                    </div>
                   </div>
                 )
               })}
+              <div className="wmd-hbar-legend">
+                <span><span className="wmd-leg" style={{ background: '#e66b67' }} /> Answer total</span>
+                <span><span className="wmd-leg" style={{ background: 'repeating-linear-gradient(-45deg, rgba(42,26,16,0.4) 0 4px, transparent 4px 8px)' }} /> With written comment ({totalComments} of {totalActive})</span>
+              </div>
             </div>
-          </div>}
           </div>
-        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-            <p className="text-sm text-[#6b4f3f]">Total Responses</p>
-            <p className="text-2xl font-semibold text-[#2a1a10]">{activeResponses.length}</p>
-            {botCount > 0 && hideBots && (
-              <p className="text-xs text-[#a68b7a] mt-1">{botCount} bot{botCount !== 1 ? 's' : ''} hidden</p>
-            )}
-          </div>
-          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-            <p className="text-sm text-[#6b4f3f]">Total Comments</p>
-            <p className="text-2xl font-semibold text-[#2a1a10]">
-              {totalComments}
-              <span className="text-sm font-normal text-[#a68b7a] ml-1">
-                ({activeResponses.length > 0 ? Math.round((totalComments / activeResponses.length) * 100) : 0}%)
-              </span>
-            </p>
-          </div>
-          {answerCounts.map(([value, { total, withComments }]) => (
-            <div key={value} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-              <p className="text-sm text-[#6b4f3f] truncate">{value}</p>
-              <p className="text-2xl font-semibold text-[#2a1a10]">
-                {total}
-                <span className="text-sm font-normal text-[#a68b7a] ml-1">
-                  ({activeResponses.length > 0 ? Math.round((total / activeResponses.length) * 100) : 0}%)
-                </span>
-              </p>
-              <p className="text-xs text-[#a68b7a] mt-1">
-                {total > 0 ? Math.round((withComments / total) * 100) : 0}% commented
-              </p>
-              <p className="text-xs text-[#a68b7a]">
-                {totalComments > 0 ? Math.round((withComments / totalComments) * 100) : 0}% of all comments
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Visualizations */}
-        {activeResponses.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <div ref={chartRef} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-[#6b4f3f]">Answer Distribution</p>
-                <button
-                  data-html2canvas-ignore
-                  onClick={() => downloadPng(chartRef, `${survey?.title || 'chart'}-distribution.png`)}
-                  className="text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
-                >
+          {locationBreakdowns.countries.length > 0 ? (
+            <div className="wmd-card" ref={mapRef}>
+              <div className="wmd-card-head">
+                <h2 className="wmd-card-h">Response locations</h2>
+                <button data-html2canvas-ignore className="wmd-card-link" onClick={() => downloadPng(mapRef, `${survey.title}-locations.png`)}>
                   Save PNG
                 </button>
               </div>
-              <AnswerDistributionChart answerCounts={answerCounts} totalResponses={activeResponses.length} />
-            </div>
-            {locationBreakdowns.countries.length > 0 && (
-              <div ref={mapRef} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-medium text-[#6b4f3f]">Response Locations</p>
-                  <button
-                    data-html2canvas-ignore
-                    onClick={() => downloadPng(mapRef, `${survey?.title || 'map'}-locations.png`)}
-                    className="text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
-                  >
-                    Save PNG
-                  </button>
-                </div>
+              <div className="wmd-map">
                 <ResponseMap countries={locationBreakdowns.countries} />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Location Breakdowns */}
-        {(locationBreakdowns.countries.length > 0 || locationBreakdowns.usRegions.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {locationBreakdowns.countries.length > 0 && (
-              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-                <p className="text-sm font-medium text-[#6b4f3f] mb-2">By Country</p>
-                <div className="space-y-1">
-                  {locationBreakdowns.countries.map(([country, count]) => (
-                    <div key={country} className="flex justify-between text-sm">
-                      <span className="text-[#2a1a10]">{country}</span>
-                      <span className="text-[#a68b7a]">{count}</span>
-                    </div>
-                  ))}
+                <div className="wmd-map-foot">
+                  <strong>{locationBreakdowns.countries.length}</strong> countr{locationBreakdowns.countries.length === 1 ? 'y' : 'ies'}
+                  {locationBreakdowns.usRegions.length > 0 && <> · <strong>{locationBreakdowns.usRegions.length}</strong> US states</>}
                 </div>
               </div>
-            )}
-            {locationBreakdowns.usRegions.length > 0 && (
-              <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-                <p className="text-sm font-medium text-[#6b4f3f] mb-2">US by Region</p>
-                <div className="space-y-1">
-                  {locationBreakdowns.usRegions.map(([region, count]) => (
-                    <div key={region} className="flex justify-between text-sm">
-                      <span className="text-[#2a1a10]">{region}</span>
-                      <span className="text-[#a68b7a]">{count}</span>
-                    </div>
-                  ))}
-                </div>
+            </div>
+          ) : (
+            <div className="wmd-card">
+              <div className="wmd-card-head">
+                <h2 className="wmd-card-h">Response locations</h2>
               </div>
-            )}
-          </div>
-        )}
+              <div className="wmd-card-body">
+                <p className="wmd-pagedeck">No location data yet.</p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
-        {/* Filter + Export */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+      {(locationBreakdowns.countries.length > 0 || locationBreakdowns.usRegions.length > 0) && (
+        <section className="wmd-grid-2">
+          {locationBreakdowns.countries.length > 0 && (
+            <div className="wmd-card">
+              <div className="wmd-card-head"><h2 className="wmd-card-h">By country</h2></div>
+              <RankList items={locationBreakdowns.countries} />
+            </div>
+          )}
+          {locationBreakdowns.usRegions.length > 0 && (
+            <div className="wmd-card">
+              <div className="wmd-card-head"><h2 className="wmd-card-h">US by region</h2></div>
+              <RankList items={locationBreakdowns.usRegions} />
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="wmd-card">
+        <div className="wmd-card-head">
+          <div>
+            <h2 className="wmd-card-h">Responses</h2>
+            <span className="wmd-card-meta">Real names and identifiers stay in your account. Hover a row to copy or delete.</span>
+          </div>
+        </div>
+        <div className="wmd-resp-toolbar">
+          <div className="wmd-search wmd-search-sm">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" />
+            </svg>
             <input
-              type="text"
-              placeholder="Filter responses..."
+              placeholder="Filter responses…"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 bg-[#fdf6ee] border border-[#e8dfd2] rounded-md text-[#2a1a10] placeholder-[#a68b7a] focus:outline-none focus:ring-1 focus:ring-[#e66b67] focus:border-[#e66b67] w-full sm:w-64"
             />
-            <label className="flex items-center gap-2 text-sm text-[#6b4f3f] cursor-pointer whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={commentsOnly}
-                onChange={(e) => setCommentsOnly(e.target.checked)}
-                className="rounded border-[#d6c8b6] bg-[#fdf6ee] text-[#e66b67] focus:ring-[#e66b67]"
-              />
-              Comments only
-            </label>
-            {botCount > 0 && (
-              <label className="flex items-center gap-2 text-sm text-[#6b4f3f] cursor-pointer whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  checked={hideBots}
-                  onChange={(e) => setHideBots(e.target.checked)}
-                  className="rounded border-[#d6c8b6] bg-[#fdf6ee] text-[#e66b67] focus:ring-[#e66b67]"
-                />
-                Hide bots ({botCount})
-              </label>
-            )}
           </div>
-          <button
-            onClick={exportToCSV}
-            disabled={activeResponses.length === 0}
-            className="px-4 py-2 bg-[#e66b67] text-white rounded-md hover:bg-[#c95551] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-          >
-            Export to CSV
+          <label className="wmd-resp-toggle">
+            <input type="checkbox" checked={commentsOnly} onChange={(e) => setCommentsOnly(e.target.checked)} />
+            Comments only
+          </label>
+          {botCount > 0 && (
+            <label className="wmd-resp-toggle">
+              <input type="checkbox" checked={hideBots} onChange={(e) => setHideBots(e.target.checked)} />
+              Hide bots <span className="wmd-resp-pill">{botCount}</span>
+            </label>
+          )}
+          <div className="wmd-resp-spacer" />
+          <button className="wmd-btn-primary wmd-btn-sm" onClick={exportToCSV} disabled={activeResponses.length === 0}>
+            Export CSV
           </button>
         </div>
 
         {filteredResponses.length === 0 ? (
-          <div className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-8 text-center">
-            <p className="text-[#6b4f3f]">
-              {responses.length === 0
-                ? 'No responses yet. Share your survey link to start collecting responses!'
-                : activeResponses.length === 0
-                  ? 'All responses were flagged as bots. Uncheck "Hide bots" to see them.'
-                  : 'No responses match your filter.'}
-            </p>
+          <div className="wmd-list-empty">
+            {responses.length === 0
+              ? 'No responses yet. Share your survey link to start collecting feedback.'
+              : activeResponses.length === 0
+                ? 'All responses were flagged as bots. Uncheck "Hide bots" to see them.'
+                : 'No responses match your filter.'}
           </div>
         ) : (
           <>
-            {/* Mobile card layout */}
-            <div className="space-y-4 md:hidden">
-              {filteredResponses.map((response) => (
-                <div key={response.id} className="bg-[#ffffff] border border-[#e8dfd2] rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-medium text-[#2a1a10]">{response.answer_value}</span>
-                    <button
-                      onClick={() => deleteResponse(response.id)}
-                      disabled={deletingId === response.id}
-                      className="text-[#EF4444] text-sm disabled:opacity-50"
-                    >
-                      {deletingId === response.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </div>
-                  {response.free_response && (
-                    <div className="group/resp relative mb-2">
-                      <p className="text-sm text-[#2a1a10]">{response.free_response}</p>
+            <div className="wmd-table">
+              <div className="wmd-table-head">
+                <div>Date</div>
+                <div>Answer</div>
+                <div>Response</div>
+                <div>Name</div>
+                <div>Location</div>
+                <div>Device</div>
+                <div className="wmd-c-right">·</div>
+              </div>
+              {filteredResponses.map((r) => {
+                const answerIdx = answerCounts.findIndex(([v]) => v === r.answer_value)
+                const color = answerIdx >= 0 ? ANSWER_PALETTE[answerIdx % ANSWER_PALETTE.length] : '#a68b7a'
+                return (
+                  <div className="wmd-table-row" key={r.id}>
+                    <div className="wmd-td-date">{formatDate(r.created_at)}</div>
+                    <div>
+                      <span className="wmd-ans" style={{ background: color, color: '#fff' }}>{r.answer_value}</span>
+                    </div>
+                    <div className="wmd-td-resp">
+                      {r.free_response ? (
+                        <>
+                          <span>{r.free_response}</span>
+                          <button onClick={() => copyResponse(r)} className="wmd-resp-copy">
+                            {copiedResponseId === r.id ? 'Copied!' : 'Copy'}
+                          </button>
+                        </>
+                      ) : (
+                        <span className="wmd-resp-empty">—</span>
+                      )}
+                    </div>
+                    <div className="wmd-td-name">{r.respondent_name || '—'}</div>
+                    <div className="wmd-td-loc">{r.location || '—'}</div>
+                    <div className="wmd-td-dev">{parseUserAgent(r.user_agent)}</div>
+                    <div className="wmd-c-right">
                       <button
-                        onClick={() => copyResponse(response)}
-                        className="mt-1 text-xs text-[#a68b7a] hover:text-[#6b4f3f]"
+                        onClick={() => deleteResponse(r.id)}
+                        disabled={deletingId === r.id}
+                        className="wmd-trash"
+                        aria-label="Delete response"
+                        title="Delete response"
                       >
-                        {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" /></svg>
                       </button>
                     </div>
-                  )}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#a68b7a]">
-                    <span>{formatDate(response.created_at)}</span>
-                    {survey?.require_name && response.respondent_name && (
-                      <span>{response.respondent_name}</span>
-                    )}
-                    {response.location && <span>{response.location}</span>}
-                    <span>{parseUserAgent(response.user_agent)}</span>
-                    {response.hash_md5 && (
-                      <span className="font-mono">{response.hash_md5.substring(0, 12)}...</span>
-                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-
-            {/* Desktop table layout */}
-            <div className="hidden md:block bg-[#ffffff] border border-[#e8dfd2] rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#e8dfd2] table-fixed">
-                  <colgroup>
-                    <col className="w-[100px]" />
-                    <col className="w-[100px]" />
-                    <col />
-                    {survey?.require_name && <col className="w-[100px]" />}
-                    <col className="w-[120px]" />
-                    <col className="w-[80px]" />
-                    <col className="w-[100px]" />
-                    <col className="w-[70px]" />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Answer
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Response
-                      </th>
-                      {survey?.require_name && (
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                          Name
-                        </th>
-                      )}
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Location
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Device
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                        Hash
-                      </th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-[#a68b7a] uppercase tracking-wider">
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e8dfd2]">
-                    {filteredResponses.map((response) => (
-                      <tr key={response.id} className="hover:bg-[#fdf6ee] transition-colors">
-                        <td className="px-3 py-3 text-xs text-[#a68b7a]">
-                          {formatDate(response.created_at)}
-                        </td>
-                        <td className="px-3 py-3 text-sm font-medium text-[#2a1a10] truncate">
-                          {response.answer_value}
-                        </td>
-                        <td className="px-3 py-3 text-sm text-[#2a1a10]">
-                          {response.free_response ? (
-                            <div className="group/resp relative">
-                              <span>{response.free_response}</span>
-                              <button
-                                onClick={() => copyResponse(response)}
-                                className="ml-2 text-xs text-[#a68b7a] hover:text-[#6b4f3f] opacity-0 group-hover/resp:opacity-100 transition-opacity"
-                              >
-                                {copiedResponseId === response.id ? 'Copied!' : 'Copy'}
-                              </button>
-                            </div>
-                          ) : '-'}
-                        </td>
-                        {survey?.require_name && (
-                          <td className="px-3 py-3 text-sm text-[#6b4f3f] truncate">
-                            {response.respondent_name || '-'}
-                          </td>
-                        )}
-                        <td className="px-3 py-3 text-xs text-[#a68b7a] truncate">
-                          {response.location || '-'}
-                        </td>
-                        <td className="px-3 py-3 text-xs text-[#a68b7a] truncate">
-                          {parseUserAgent(response.user_agent)}
-                        </td>
-                        <td className="px-3 py-3 text-xs text-[#a68b7a] font-mono truncate">
-                          {response.hash_md5 ? response.hash_md5.substring(0, 8) : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right text-sm">
-                          <button
-                            onClick={() => deleteResponse(response.id)}
-                            disabled={deletingId === response.id}
-                            className="text-[#EF4444] hover:text-[#DC2626] disabled:opacity-50"
-                          >
-                            {deletingId === response.id ? '...' : '❌'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <footer className="wmd-table-foot">
+              Showing {filteredResponses.length} of {activeResponses.length}
+            </footer>
           </>
         )}
-      </div>
-    </div>
+      </section>
+    </AppShell>
+  )
+}
+
+function RankList({ items }: { items: [string, number][] }) {
+  const max = Math.max(1, ...items.map(([, v]) => v))
+  return (
+    <ul className="wmd-rank">
+      {items.map(([name, count]) => (
+        <li key={name}>
+          <span className="wmd-rank-name">{name}</span>
+          <span className="wmd-rank-bar"><span style={{ width: (count / max) * 100 + '%' }} /></span>
+          <span className="wmd-rank-val">{count}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
