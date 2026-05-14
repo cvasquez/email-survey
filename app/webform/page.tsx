@@ -1,7 +1,4 @@
-export const metadata = {
-  title: 'Webform Test — Backtalk',
-  description: 'Form targeting test playground',
-}
+'use client'
 
 export default function WebformTestPage() {
   return (
