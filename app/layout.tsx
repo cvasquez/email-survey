@@ -17,7 +17,7 @@ export default function RootLayout({
       <body className="antialiased">
         {children}
         <Script
-          src="https://cdn.optintest.com/content.js?account=8c3f3496-5006-4148-ab84-37066775e2df"
+          src="https://clickpop.optin.com/content.js?account=cafe8afa-5d70-4100-a8c8-feb3d8115a49"
           strategy="afterInteractive"
         />
       </body>
