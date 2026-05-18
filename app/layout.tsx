@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
+import PopupScript from "./components/popup-script";
 
 export const metadata: Metadata = {
   title: "Backtalk",
@@ -16,10 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
-        <Script
-          src="https://clickpop.optin.com/content.js?account=cafe8afa-5d70-4100-a8c8-feb3d8115a49"
-          strategy="afterInteractive"
-        />
+        <PopupScript />
       </body>
     </html>
   );
