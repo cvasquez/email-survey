@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-
 export type TargetingRule = {
   label: string
   description: string
@@ -65,6 +63,62 @@ export default function TestLanding({
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
+      <nav
+        style={{
+          background: '#141414',
+          borderBottom: '1px solid #262626',
+          padding: '12px 24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: '0 auto',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 20,
+            fontSize: 12,
+          }}
+        >
+          <SelectorGroup label="Environment">
+            {(['production', 'test'] as Env[]).map((e) => {
+              const active = e === env
+              return (
+                <PillLink
+                  key={e}
+                  href={pathFor(slug, e)}
+                  active={active}
+                  activeColor={rule.accent}
+                >
+                  {e === 'production' ? 'prod' : 'test'}
+                </PillLink>
+              )
+            })}
+          </SelectorGroup>
+
+          <div
+            style={{ width: 1, alignSelf: 'stretch', background: '#262626' }}
+          />
+
+          <SelectorGroup label="Version">
+            {SLUGS.map((s) => {
+              const active = s === slug
+              return (
+                <PillLink
+                  key={s}
+                  href={pathFor(s, env)}
+                  active={active}
+                  activeColor={RULES[s].accent}
+                >
+                  {s}
+                </PillLink>
+              )
+            })}
+          </SelectorGroup>
+        </div>
+      </nav>
+
       <div style={{ maxWidth: 880, margin: '0 auto', padding: '64px 24px' }}>
         <div
           style={{
@@ -234,63 +288,68 @@ export default function TestLanding({
             style={{
               fontSize: 14,
               color: '#A1A1A1',
-              margin: '12px 0 20px',
+              margin: '12px 0 0',
               lineHeight: 1.5,
             }}
           >
             {rule.description}
           </p>
-
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 8,
-              fontSize: 12,
-            }}
-          >
-            <Link
-              href={pathFor(slug, env === 'test' ? 'production' : 'test')}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 6,
-                border: '1px solid #333333',
-                color: '#EDEDED',
-                background: 'transparent',
-                textDecoration: 'none',
-                fontFamily:
-                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-              }}
-            >
-              ↔ switch to {env === 'test' ? 'prod' : 'test'}
-            </Link>
-            {SLUGS.map((s) => {
-              const path = pathFor(s, env)
-              const active = s === slug
-              return (
-                <Link
-                  key={s}
-                  href={path}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 6,
-                    border: `1px solid ${
-                      active ? RULES[s].accent : '#262626'
-                    }`,
-                    color: active ? RULES[s].accent : '#A1A1A1',
-                    background: active ? '#0A0A0A' : 'transparent',
-                    textDecoration: 'none',
-                    fontFamily:
-                      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  }}
-                >
-                  {path}
-                </Link>
-              )
-            })}
-          </div>
         </section>
       </div>
     </main>
+  )
+}
+
+function SelectorGroup({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span
+        style={{
+          color: '#666666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{children}</div>
+    </div>
+  )
+}
+
+function PillLink({
+  href,
+  active,
+  activeColor,
+  children,
+}: {
+  href: string
+  active: boolean
+  activeColor: string
+  children: React.ReactNode
+}) {
+  return (
+    <a
+      href={href}
+      style={{
+        padding: '4px 10px',
+        borderRadius: 6,
+        border: `1px solid ${active ? activeColor : '#262626'}`,
+        color: active ? activeColor : '#A1A1A1',
+        background: active ? '#0A0A0A' : 'transparent',
+        textDecoration: 'none',
+        fontFamily:
+          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+      }}
+    >
+      {children}
+    </a>
   )
 }
