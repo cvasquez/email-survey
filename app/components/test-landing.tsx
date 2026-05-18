@@ -33,14 +33,26 @@ const RULES: Record<string, TargetingRule> = {
   },
 }
 
-const PAGES: { slug: keyof typeof RULES; path: string }[] = [
-  { slug: 'once-visitor', path: '/once-visitor' },
-  { slug: 'once-session', path: '/once-session' },
-  { slug: 'once-1-day', path: '/once-1-day' },
-  { slug: 'every-page-load', path: '/every-page-load' },
+export type Env = 'production' | 'test'
+
+const SLUGS: (keyof typeof RULES)[] = [
+  'once-visitor',
+  'once-session',
+  'once-1-day',
+  'every-page-load',
 ]
 
-export default function TestLanding({ slug }: { slug: keyof typeof RULES }) {
+function pathFor(slug: string, env: Env) {
+  return env === 'test' ? `/test-${slug}` : `/${slug}`
+}
+
+export default function TestLanding({
+  slug,
+  env = 'production',
+}: {
+  slug: keyof typeof RULES
+  env?: Env
+}) {
   const rule = RULES[slug]
 
   return (
@@ -76,7 +88,7 @@ export default function TestLanding({ slug }: { slug: keyof typeof RULES }) {
               background: rule.accent,
             }}
           />
-          AWeber form test · {rule.label}
+          AWeber form test · {rule.label} · {env === 'test' ? 'test env' : 'prod env'}
         </div>
 
         <h1
@@ -237,26 +249,42 @@ export default function TestLanding({ slug }: { slug: keyof typeof RULES }) {
               fontSize: 12,
             }}
           >
-            {PAGES.map((p) => {
-              const active = p.slug === slug
+            <Link
+              href={pathFor(slug, env === 'test' ? 'production' : 'test')}
+              style={{
+                padding: '6px 10px',
+                borderRadius: 6,
+                border: '1px solid #333333',
+                color: '#EDEDED',
+                background: 'transparent',
+                textDecoration: 'none',
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              }}
+            >
+              ↔ switch to {env === 'test' ? 'prod' : 'test'}
+            </Link>
+            {SLUGS.map((s) => {
+              const path = pathFor(s, env)
+              const active = s === slug
               return (
                 <Link
-                  key={p.slug}
-                  href={p.path}
+                  key={s}
+                  href={path}
                   style={{
                     padding: '6px 10px',
                     borderRadius: 6,
                     border: `1px solid ${
-                      active ? RULES[p.slug].accent : '#262626'
+                      active ? RULES[s].accent : '#262626'
                     }`,
-                    color: active ? RULES[p.slug].accent : '#A1A1A1',
+                    color: active ? RULES[s].accent : '#A1A1A1',
                     background: active ? '#0A0A0A' : 'transparent',
                     textDecoration: 'none',
                     fontFamily:
                       'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                   }}
                 >
-                  {p.path}
+                  {path}
                 </Link>
               )
             })}
